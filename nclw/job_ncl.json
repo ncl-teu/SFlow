@@ -2,38 +2,66 @@
   "job_id": 1,
   "task_list": [
     {
-      "task_id": 1, "workload": 4000, "type": 1, "usage": 55.5, "cmd": "convert -crop 50%x100% $R^ncltest/ncltest.png ncltest/out.png", "out_file_list": [
-      { "path": "ncltest/out-0.png", "size": 2,"dest_task_id": [2 ] },
-      { "path": "ncltest/out-1.png", "size": 2,"dest_task_id": [3 ] }
-    ]
+      "task_id": 1, "workload": 4000, "type": 1, "usage": 55.5, "cmd": "convert -crop 25%x100% $R^./ncltest/ncltest.png ./ncltest/out.png", "out_file_list": [
+      { "path": "./ncltest/out-0.png", "size": 2,"dest_task_id": [2 ] },
+      { "path": "./ncltest/out-1.png", "size": 2,"dest_task_id": [3 ] },
+      { "path": "./ncltest/out-2.png", "size": 2,"dest_task_id": [4 ] },
+      { "path": "./ncltest/out-3.png", "size": 2,"dest_task_id": [5 ] }
+    ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
-      "task_id": 2, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ncltest/outblack0.png",
+      "task_id": 2, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack0.png",
       "out_file_list": [
-        {"path": "ncltest/outblack0.png", "size": 1, "dest_task_id": [4] }]
-    },
-    {
-      "task_id": 3, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ncltest/outblack1.png",
-      "out_file_list": [
-        {"path": "ncltest/outblack1.png", "size": 1, "dest_task_id": [5] }
+        {"path": "./ncltest/outblack0.png", "size": 1, "dest_task_id": [6] }
       ]
     },
     {
-      "task_id": 4, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^2 -quality 100 ncltest/outblack0_c.jpg",
+      "task_id": 3, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack1.png",
       "out_file_list": [
-        {"path": "ncltest/outblack0_c.jpg", "size": 1, "dest_task_id": [6] }
+        {"path": "./ncltest/outblack1.png", "size": 1, "dest_task_id": [7] }
       ]
     },
     {
-      "task_id": 5, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^3 -quality 100 ncltest/outblack1_c.jpg",
+      "task_id": 4, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack2.png",
       "out_file_list": [
-        {"path": "ncltest/outblack1_c.jpg", "size": 1, "dest_task_id": [6] }
+        {"path": "./ncltest/outblack2.png", "size": 1, "dest_task_id": [8] }
       ]
     },
     {
-      "task_id": 6, "workload": 10000, "type": 1, "usage": 55.5, "cmd": "montage $F^4 $F^5 ncltest/result.jpg",
+      "task_id": 5, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack3.png",
       "out_file_list": [
-        {"path": "ncltest/result.jpg", "size": 3, "dest_task_id": [] }
+        {"path": "./ncltest/outblack3.png", "size": 1, "dest_task_id": [9] }
+      ]
+    },
+    {
+      "task_id": 6, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^2 -quality 100 ./ncltest/outblack0_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack0_c.jpg", "size": 1, "dest_task_id": [10] }
+      ]
+    },
+    {
+      "task_id": 7, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^3 -quality 100 ./ncltest/outblack1_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack1_c.jpg", "size": 1, "dest_task_id": [10] }
+      ]
+    },
+    {
+      "task_id": 8, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^4 -quality 100 ./ncltest/outblack2_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack2_c.jpg", "size": 1, "dest_task_id": [10] }
+      ]
+    },
+    {
+      "task_id": 9, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^5 -quality 100 ./ncltest/outblack3_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack3_c.jpg", "size": 1, "dest_task_id": [10] }
+      ]
+    },
+    {
+      "task_id": 10, "workload": 10000, "type": 2, "usage": 55.5, "cmd": "montage $F^6 $F^7 $F^8 $F^9  ./ncltest/result.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/result.jpg", "size": 3, "dest_task_id": [] }
       ]
     }
   ]}
