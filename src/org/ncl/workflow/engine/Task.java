@@ -1,5 +1,9 @@
 package org.ncl.workflow.engine;
 
+import ch.ethz.ssh2.Connection;
+import ch.ethz.ssh2.ConnectionInfo;
+import ch.ethz.ssh2.SCPClient;
+import ch.ethz.ssh2.Session;
 import net.gripps.cloud.core.VM;
 import net.gripps.cloud.nfv.NFVEnvironment;
 import net.gripps.cloud.nfv.sfc.SFC;
@@ -27,83 +31,90 @@ public class Task implements Serializable, Runnable {
     /**
      * ID of the job including this task.
      */
-    private long jobID;
+    protected long jobID;
 
     /**
      * ID of this task.
      */
-    private long taskID;
+    protected long taskID;
 
     /**
      * String of the command.
      */
-    private String cmd;
+    protected String cmd;
 
     /**
      * Additional arguments which is determined depending on
      * the dynamics of the system.
      */
-    private String[] args;
+    protected String[] args;
 
     /**
      * Output file path of the executable command.
      */
-    private LinkedList<FileSendInfo> outFileInfoList;
+    protected LinkedList<FileSendInfo> outFileInfoList;
 
     /**
      * Output message(i.e., values) of the command.
      */
-    private DataSendInfo outDataInfo;
+    protected DataSendInfo outDataInfo;
 
     /**
      * Immediate predecessor task IDs.
      */
-    // private LinkedList<Long> fromTaskList;
+    // protected LinkedList<Long> fromTaskList;
 
     /**
      * Immediate successor task IDs.
      */
-    //private LinkedList<Long> toTaskList;
+    //protected LinkedList<Long> toTaskList;
 
     /**
      * Actual start time of the task.
      */
-    private long startTime;
+    protected long startTime;
 
     /**
      * Actual completion time of the task.
      */
-    private long completionTime;
+    protected long completionTime;
 
     /**
      * assignment target ID.
      * vCPU level ID.
      */
-    private String targetID;
+    protected String targetID;
 
-    private HashMap<Long, NCLWData> inDataMap;
+    protected HashMap<Long, NCLWData> inDataMap;
 
-    private HashMap<Long, NCLWData> outDataMap;
+    protected HashMap<Long, NCLWData> outDataMap;
 
-    private CustomIDSet portSet;
+    protected CustomIDSet portSet;
 
     /**
      * Referencial VNF to monitor the number of
      * input data/ outpu t data.
      */
-    private VNF vnf;
+    protected VNF vnf;
 
-    private SFC sfc;
+    protected SFC sfc;
 
-    private NFVEnvironment env;
+    protected NFVEnvironment env;
 
-    private WorkflowJob job;
+    protected WorkflowJob job;
 
-    private boolean isStarted;
+    protected boolean isStarted;
 
-    private boolean isFinished;
+    protected boolean isFinished;
 
-    //private int arrivedCnt;
+    protected String cd;
+
+    protected String docker_tar;
+
+    protected String docker_image;
+
+
+    //protected int arrivedCnt;
 
 
     public Task(long jobID, long taskID, String cmd,
@@ -121,6 +132,8 @@ public class Task implements Serializable, Runnable {
         this.portSet = new CustomIDSet();
         this.isStarted = false;
         this.isFinished = false;
+        this.cd =  new File(".").getAbsoluteFile().getParent();
+
         //this.arrivedCnt = 0;
         //  this.sfc = in_sfc;
         //  this.env = in_env;
@@ -151,6 +164,10 @@ public class Task implements Serializable, Runnable {
      * @return
      */
     public LinkedList<String> createCompleteCmd(String cmd) {
+        System.out.println("PreCmd:"+cmd);
+        cmd  = cmd.replaceAll("\\./",  this.cd+"/");
+
+        System.out.println("AfterCmd:"+cmd);
         StringTokenizer st1 = new StringTokenizer(cmd, " ");
         LinkedList<String> retCmd = new LinkedList<String>();
 
@@ -168,8 +185,10 @@ public class Task implements Serializable, Runnable {
                 NCLWData inData = this.inDataMap.get(taskID);
                 //outFile is specified.
                 String inFile = inData.getWriteFilePath();
+                inFile = this.convertToAbsPathAll(inFile);
 
                 cmd = cmd.replace(str, inFile);
+
                 retCmd.add(inFile);
 
 
@@ -182,15 +201,18 @@ public class Task implements Serializable, Runnable {
                 retCmd.add(inValue);
             } else if (headStr.equals("$R^")) {
                 //Obtain file from FTP server.
-                String filePath = str.substring(3);
-                cmd = cmd.replace(str, filePath);
-                File file = new File(filePath);
+
+                String prefilePath = str.substring(3);
+
+
+                cmd = cmd.replace(str, prefilePath);
+                File file = new File(prefilePath);
                 if(!file.exists()){
                     //Get the file via FTP.
-                    this.getFileByFTP(filePath);
+                    this.getFileByFTP(prefilePath);
                 }else{
                 }
-                retCmd.add(filePath);
+                retCmd.add(prefilePath);
 
 
 
@@ -200,6 +222,145 @@ public class Task implements Serializable, Runnable {
         }
 
         return retCmd;
+    }
+
+
+    public LinkedList<String>  loadDockerBySCP(LinkedList<String> orgCmd){
+        LinkedList<String> dockerCmd = new LinkedList<String>();
+
+        try{
+            //Try to save docker tar file.
+            Connection conn = new Connection(NCLWUtil.docker_repository_ip);
+            ConnectionInfo info = conn.connect();
+            boolean result = conn.authenticateWithPassword(NCLWUtil.docker_repository_userid,
+                    NCLWUtil.docker_repository_password);
+            if (result) {
+                SCPClient scp = conn.createSCPClient();
+                String localPath = this.cd + "/"+NCLWUtil.docker_localdir+"/";
+                File dir = new File(this.cd + "/"+NCLWUtil.docker_localdir+"/");
+                if(!dir.exists()){
+                    dir.mkdirs();
+                }
+
+                scp.get(NCLWUtil.docker_repository_home+"/"+this.docker_tar, localPath);
+
+                conn.close();
+            }
+            conn.close();
+            ProcessBuilder builder;
+            Process process;
+            LinkedList<String> loadCmd = new LinkedList<String>();
+            loadCmd.add("docker");
+            loadCmd.add("load");
+            loadCmd.add("-i");
+            loadCmd.add(this.cd + "/"+ NCLWUtil.docker_localdir + "/"+this.docker_tar);
+            //try to load image from tar file.
+            builder = new ProcessBuilder(loadCmd);
+            //builder.inheritIO();
+            //Execute the task.
+            process = builder.start();
+            int code =  process.waitFor();
+            InputStream stream = process.getErrorStream();
+
+            BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()));
+            BufferedReader r2 = new BufferedReader(new InputStreamReader(stream, Charset.defaultCharset()));
+            StringBuffer retBuf = new StringBuffer();
+            process.waitFor();
+
+            String line_normal;
+            String line_error;
+            while ((line_normal = r.readLine()) != null) {
+                retBuf.append(line_normal);
+            }
+
+            while ((line_error = r2.readLine()) != null) {
+                retBuf.append(line_error);
+            }
+System.out.println("LOAD RESULT:"+retBuf.toString());
+
+            if (!process.isAlive()) {
+                //After loading the docker, run it.
+                // docker run -it -v `pwd`:/home/kanemih/  cvt
+
+                dockerCmd.add("docker");
+                dockerCmd.add("run");
+                dockerCmd.add("--rm");
+               // dockerCmd.add("-it");
+                dockerCmd.add("-v");
+                dockerCmd.add(this.cd + "/"+":"+this.cd + "/");
+                dockerCmd.add(this.docker_image);
+                orgCmd.removeFirst();
+                Iterator<String> orgIte = orgCmd.listIterator();
+                while(orgIte.hasNext()){
+                    dockerCmd.add(orgIte.next());
+                }
+
+            }
+
+            return dockerCmd;
+
+        }catch(Exception e){
+
+        }
+        return dockerCmd;
+
+
+    }
+
+
+    public boolean loadDockerByFTP(String filePath){
+        FileOutputStream os = null;
+        //まずはtarを取得する．
+        File  file = new File(filePath);
+
+
+        FTPClient fp = new FTPClient();
+        FileInputStream is = null;
+        try {
+
+            fp.connect(NCLWUtil.ftp_server_ip);
+            if (!FTPReply.isPositiveCompletion(fp.getReplyCode())) { // コネクトできたか？
+                System.out.println("connection failed");
+                System.exit(1); // 異常終了
+            }
+
+            if (fp.login(NCLWUtil.ftp_server_id, NCLWUtil.ftp_server_pass) == false) { // ログインできたか？
+                System.out.println("***FTP login failed****");
+                System.exit(1); // 異常終了
+            }
+            fp.setFileType(FTP.BINARY_FILE_TYPE);
+// ファイル受信
+            if(!(file.getParent() == null)){
+                File dir = new File(file.getParent());
+                if(!dir.exists()){
+                    dir.mkdirs();
+                }
+            }
+
+            os = new FileOutputStream(filePath);// Client side
+            String serverPath = "/"+NCLWUtil.ftp_server_homedirName + "/"+this.getJobID() + "/"+file.getName();
+
+
+            fp.retrieveFile(serverPath, os);// サーバー側
+            os.close();
+            System.out.println("FTP GET COMPLETED");
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try{
+                fp.disconnect();
+
+                os.close();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
+
+        }
+        return true;
     }
 
     public void getFileByFTP(String filePath) {
@@ -255,6 +416,44 @@ public class Task implements Serializable, Runnable {
         }
     }
 
+    public String convertToAbsPath(String path){
+        return path.replace("\\./", this.cd+"/");
+    }
+
+    public String convertToAbsPathAll(String path){
+        return path.replaceAll("\\./", this.cd+"/");
+    }
+
+    public boolean isExecutable(LinkedList<String> in_cmd){
+
+
+        try{
+            Runtime r = Runtime.getRuntime();
+            String[] hashcmd = new String[]{in_cmd.get(0), in_cmd.get(1)};
+
+            Process p = r.exec(hashcmd);
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = null;
+            StringBuffer strBuf = new StringBuffer();
+            while ((line = br.readLine()) != null) {
+                strBuf.append(line);
+            }
+            String ret = strBuf.toString();
+            if(ret.equals("")||(ret.indexOf("no "+in_cmd.get(0) + " in")!=-1)){
+                return false;
+            }else{
+                return true;
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return true;
+
+
+    }
+
     @Override
     public void run() {
         System.out.println("Task:" + this.getTaskID() + "started");
@@ -276,13 +475,28 @@ public class Task implements Serializable, Runnable {
                     LinkedList<String> actualCmd = this.createCompleteCmd(this.cmd);
                     System.out.println("cmd:" + actualCmd + "@" + this.getTaskID());
 
-                    // Runtime.getRuntime().exec(actualCmd);
-                    ProcessBuilder builder = new ProcessBuilder(actualCmd);
-                    //builder.inheritIO();
-                    //Execute the task.
-                    Process process = builder.start();
+                    LinkedList<String> hashCmd = new LinkedList<String>();
+                    hashCmd.add("which");
+                    hashCmd.add(actualCmd.get(0));
+                    ProcessBuilder builder;
+                    Process process;
+                    if(this.isExecutable(hashCmd)){
+                        System.out.println("****OK! Executable!!!****");
+                        builder = new ProcessBuilder(actualCmd);
 
-                    int code =  process.waitFor();
+                        process = builder.start();
+                    }else{
+
+                        System.out.println("****NG!! NOT Executable!!! Trying to load Docker.****");
+                        LinkedList<String> dockerCmd = loadDockerBySCP(actualCmd);
+System.out.println("DockerCmd:"+dockerCmd);
+
+                        builder = new ProcessBuilder(dockerCmd);
+                        process = builder.start();
+
+                    }
+
+                        int code =  process.waitFor();
                     //process.destroy();
                     //Obtain the results regarding normal / error.
                     InputStream stream = process.getErrorStream();
@@ -301,20 +515,14 @@ public class Task implements Serializable, Runnable {
                     while ((line_error = r2.readLine()) != null) {
                         retBuf.append(line_error);
                     }
-
+System.out.println("Exec RESULT:"+retBuf.toString());
                     //int result = process.exitValue();
                     // if (result == 0) {
 
                     if (!process.isAlive()) {
 
-
-                       /* try{
-                            Thread.sleep(3000);
-                        }catch(Exception e){
-                            e.printStackTrace();
-                        }
-
-                        */
+                        int result = process.exitValue();
+                        System.out.println("cmd:"+actualCmd + "code:"+result);
 
                         //Normal Termination. Thus, the process tries to
                         //get retultant data.
@@ -325,6 +533,7 @@ public class Task implements Serializable, Runnable {
                             //per file loop
                             while (fIte.hasNext()) {
                                 FileSendInfo fsi = fIte.next();
+
                                 File file = new File(fsi.getPath());
                                 System.out.println("FileName:"+file.getPath() + "/Size:"+file.length());
                                 while(!file.exists()|| file.length()==0){
@@ -495,23 +704,6 @@ public class Task implements Serializable, Runnable {
         this.outDataInfo = outDataInfo;
     }
 
-    /*
-        public LinkedList<Long> getFromTaskList() {
-            return fromTaskList;
-        }
-
-        public void setFromTaskList(LinkedList<Long> fromTaskList) {
-            this.fromTaskList = fromTaskList;
-        }
-
-        public LinkedList<Long> getToTaskList() {
-            return toTaskList;
-        }
-
-        public void setToTaskList(LinkedList<Long> toTaskList) {
-            this.toTaskList = toTaskList;
-        }
-    */
 
     public boolean isEndVNF() {
         return this.vnf.getDsucList().isEmpty();
@@ -611,5 +803,21 @@ public class Task implements Serializable, Runnable {
 
     public void setFinished(boolean finished) {
         isFinished = finished;
+    }
+
+    public String getDocker_tar() {
+        return docker_tar;
+    }
+
+    public void setDocker_tar(String docker_tar) {
+        this.docker_tar = docker_tar;
+    }
+
+    public String getDocker_image() {
+        return docker_image;
+    }
+
+    public void setDocker_image(String docker_image) {
+        this.docker_image = docker_image;
     }
 }

@@ -69,10 +69,22 @@ public class WorkflowJsonLoader {
                 long weight = jvnf.get("workload").longValue();
                 int usage = jvnf.get("usage").intValue();
                 int type = jvnf.get("type").intValue();
+                String docker_tar = null;
+                String docker_image = null;
+                if(jvnf.has("docker-tarname")&&jvnf.has("docker-imagename")){
+                    docker_tar = jvnf.get("docker-tarname").asText();
+                     docker_image = jvnf.get("docker-imagename").asText();
+
+                }
+
                 VNF vnf = new VNF(type, weight, -1, -1, -1, null, usage);
                 vnf =apl.addVNF(vnf, taskid);
-                this.job.getTaskMap().put(taskid, new Task(this.root.get("job_id").longValue(),taskid,
-                        null,null,null,null,null,null ));
+                Task task = new Task(this.root.get("job_id").longValue(),taskid,
+                        null,null,null,null,null,null );
+                task.setDocker_image(docker_image);
+                task.setDocker_tar(docker_tar);
+
+                this.job.getTaskMap().put(taskid, task);
                 jTaskMap.put(taskid, jvnf);
 
             }

@@ -43,6 +43,16 @@ public class NCLWUtil {
 
     public static String ftp_server_homedirName;
 
+    public static String docker_repository_home;
+
+    public static String docker_repository_ip;
+
+    public static String docker_repository_userid;
+
+    public static String docker_repository_password;
+
+    public static String docker_localdir;
+
 
 
 
@@ -84,7 +94,12 @@ public class NCLWUtil {
             NCLWUtil.ftp_server_id = NCLWUtil.prop.getProperty("ftp_server_id");
             NCLWUtil.ftp_server_pass = NCLWUtil.prop.getProperty("ftp_server_pass");
             NCLWUtil.ftp_server_homedirName = NCLWUtil.prop.getProperty("ftp_server_homedirName");
+            NCLWUtil.docker_repository_home = NCLWUtil.prop.getProperty("docker_repository_home");
+            NCLWUtil.docker_repository_ip = NCLWUtil.prop.getProperty("docker_repository_ip");
 
+            NCLWUtil.docker_repository_userid =  NCLWUtil.prop.getProperty("docker_repository_userid");
+            NCLWUtil.docker_repository_password = NCLWUtil.prop.getProperty("docker_repository_password");
+            NCLWUtil.docker_localdir = NCLWUtil.prop.getProperty("docker_localdir");
 
 
 
@@ -99,14 +114,13 @@ public class NCLWUtil {
      * @return
      */
     public static double log2(double x) {
-        // 迚ｹ谿翫↑蛟､
+
         if (Double.isNaN(x) || x < 0.0) return Double.NaN;
         if (x == Double.POSITIVE_INFINITY) return Double.POSITIVE_INFINITY;
         if (x == 0.0) return Double.NEGATIVE_INFINITY;
-        // 縺薙％縺九ｉ
         int k = Math.getExponent(x);
         if (k < Double.MIN_EXPONENT) {
-            // 髱樊ｭ｣隕丞喧謨ｰ縺ｯ蜿匁桶縺・ｳｨ諢擾ｼ・
+
             k = Math.getExponent(x * 0x1.0p52) - 52;
         }
         if (k < 0) {
@@ -145,7 +159,7 @@ public class NCLWUtil {
 
 
     /**
-     * Int蝙九・・御ｸ讒假ｼ乗ｭ｣隕丞・蟶・・蜉幃未謨ｰ
+     *
      *
      * @param min
      * @param max
@@ -158,7 +172,7 @@ public class NCLWUtil {
             return min;
         }
         if (dist == 0) {
-            //荳讒伜・蟶・
+            //テストです．
             return min + (int) (Math.random() * (max - min + 1));
 
         } else {
