@@ -4,6 +4,8 @@ import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.ConnectionInfo;
 import ch.ethz.ssh2.SCPClient;
 import ch.ethz.ssh2.Session;
+import com.amihaiemil.docker.Docker;
+import com.amihaiemil.docker.Images;
 import net.gripps.cloud.core.VM;
 import net.gripps.cloud.nfv.NFVEnvironment;
 import net.gripps.cloud.nfv.sfc.SFC;
@@ -224,6 +226,47 @@ public class Task implements Serializable, Runnable {
         return retCmd;
     }
 
+    public String  nclwExec(LinkedList<String> cmdList){
+        try{
+            ProcessBuilder builder;
+            Process process;
+
+            //try to load image from tar file.
+            builder = new ProcessBuilder(cmdList);
+            //builder.inheritIO();
+            //Execute the task.
+            process = builder.start();
+            int code =  process.waitFor();
+            InputStream stream = process.getErrorStream();
+
+            BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()));
+            BufferedReader r2 = new BufferedReader(new InputStreamReader(stream, Charset.defaultCharset()));
+            StringBuffer retBuf = new StringBuffer();
+            process.waitFor();
+
+            String line_normal;
+            String line_error;
+            while ((line_normal = r.readLine()) != null) {
+                retBuf.append(line_normal);
+            }
+
+            while ((line_error = r2.readLine()) != null) {
+                retBuf.append(line_error);
+            }
+
+
+            if (!process.isAlive()) {
+                return retBuf.toString();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+
+
 
     public LinkedList<String>  loadDockerBySCP(LinkedList<String> orgCmd){
         LinkedList<String> dockerCmd = new LinkedList<String>();
@@ -245,15 +288,23 @@ public class Task implements Serializable, Runnable {
                 scp.get(NCLWUtil.docker_repository_home+"/"+this.docker_tar, localPath);
 
                 conn.close();
+            }else{
+                System.out.println("SCP Connection Failed...");
             }
             conn.close();
             ProcessBuilder builder;
             Process process;
             LinkedList<String> loadCmd = new LinkedList<String>();
+            if(NCLWUtil.isWindows()){
+                loadCmd.add("cmd");
+                loadCmd.add("/c");
+            }
             loadCmd.add("docker");
             loadCmd.add("load");
             loadCmd.add("-i");
             loadCmd.add(this.cd + "/"+ NCLWUtil.docker_localdir + "/"+this.docker_tar);
+
+
             //try to load image from tar file.
             builder = new ProcessBuilder(loadCmd);
             //builder.inheritIO();
@@ -281,19 +332,8 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
             if (!process.isAlive()) {
                 //After loading the docker, run it.
                 // docker run -it -v `pwd`:/home/kanemih/  cvt
+                dockerCmd = this.generateDockerRunCmd(orgCmd);
 
-                dockerCmd.add("docker");
-                dockerCmd.add("run");
-                dockerCmd.add("--rm");
-               // dockerCmd.add("-it");
-                dockerCmd.add("-v");
-                dockerCmd.add(this.cd + "/"+":"+this.cd + "/");
-                dockerCmd.add(this.docker_image);
-                orgCmd.removeFirst();
-                Iterator<String> orgIte = orgCmd.listIterator();
-                while(orgIte.hasNext()){
-                    dockerCmd.add(orgIte.next());
-                }
 
             }
 
@@ -305,6 +345,23 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
         return dockerCmd;
 
 
+    }
+
+    public LinkedList<String> generateDockerRunCmd(LinkedList<String> orgCmd){
+        LinkedList<String> dockerCmd = new LinkedList<String>();
+        dockerCmd.add("docker");
+        dockerCmd.add("run");
+        dockerCmd.add("--rm");
+        // dockerCmd.add("-it");
+        dockerCmd.add("-v");
+        dockerCmd.add(this.cd + "/"+":"+this.cd + "/");
+        dockerCmd.add(this.docker_image);
+        orgCmd.removeFirst();
+        Iterator<String> orgIte = orgCmd.listIterator();
+        while(orgIte.hasNext()){
+            dockerCmd.add(orgIte.next());
+        }
+        return dockerCmd;
     }
 
 
@@ -440,6 +497,7 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
                 strBuf.append(line);
             }
             String ret = strBuf.toString();
+            //nullもしくはno command形式なら，ダメということ．
             if(ret.equals("")||(ret.indexOf("no "+in_cmd.get(0) + " in")!=-1)){
                 return false;
             }else{
@@ -476,8 +534,19 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
                     System.out.println("cmd:" + actualCmd + "@" + this.getTaskID());
 
                     LinkedList<String> hashCmd = new LinkedList<String>();
-                    hashCmd.add("which");
-                    hashCmd.add(actualCmd.get(0));
+                    if(NCLWUtil.isWindows()){
+                        hashCmd.add("cmd");
+                        hashCmd.add("/c");
+                        hashCmd.add("echo");
+                        hashCmd.add("%PATH%");
+                        hashCmd.add("|");
+                        hashCmd.add("grep");
+                        hashCmd.add(actualCmd.get(0));
+                    }else{
+                        hashCmd.add("which");
+                        hashCmd.add(actualCmd.get(0));
+                    }
+
                     ProcessBuilder builder;
                     Process process;
                     if(this.isExecutable(hashCmd)){
@@ -486,11 +555,29 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
 
                         process = builder.start();
                     }else{
+                        //Try to execute through docker.
+                        //search the image name from docker image list.
+                        LinkedList<String> dockerExistCmd = new LinkedList<String>();
+                        if(NCLWUtil.isWindows()){
+                            dockerExistCmd.add("cmd");
+                            dockerExistCmd.add("/c");
+                        }
+                        dockerExistCmd.add("docker");
+                        dockerExistCmd.add("images");
+                        dockerExistCmd.add("|");
+                        dockerExistCmd.add("grep");
+                        dockerExistCmd.add("-w");
+                        dockerExistCmd.add(this.docker_image);
 
-                        System.out.println("****NG!! NOT Executable!!! Trying to load Docker.****");
-                        LinkedList<String> dockerCmd = loadDockerBySCP(actualCmd);
-System.out.println("DockerCmd:"+dockerCmd);
-
+                        LinkedList<String> dockerCmd = new LinkedList<String>();
+                        if(this.isExecutable(dockerExistCmd)){
+                            //execute by docker.
+                            dockerCmd = this.generateDockerRunCmd(actualCmd);
+                        }else{
+                            System.out.println("****NG!! NOT Executable!!! Trying to load Docker.****");
+                            dockerCmd = loadDockerBySCP(actualCmd);
+                            System.out.println("DockerCmd:"+dockerCmd);
+                        }
                         builder = new ProcessBuilder(dockerCmd);
                         process = builder.start();
 

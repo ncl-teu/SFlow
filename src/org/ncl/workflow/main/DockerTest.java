@@ -1,6 +1,7 @@
 package org.ncl.workflow.main;
 
-import com.amihaiemil.docker.*;
+
+import org.ncl.workflow.util.NCLWUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,11 +14,12 @@ import java.util.LinkedList;
 
 /**
  * Created by Hidehiro Kanemitsu on 2019/06/08.
- * - 遠隔からdockerイメージをDLする．
+ * - 遠隔からdockerイメージをDLする．docker
  * - DLしたイメージをロードする．
  * - cmdで定義したコマンドを実行する．
  * - インスタンス = Dockerイメージ
  *
+ * docker build -t 名前 .
  * 1. dockerイメージをtar保存する．
  * step1. docker save イメージ名 -o 名前.tar
  * ~~~~~~~~~~ここから↓は，実行時~~~~~~~
@@ -47,9 +49,22 @@ import java.util.LinkedList;
 public class DockerTest {
     public static void main(String[] args){
         try{
-
+            String os = System.getProperty("os.name").toLowerCase();
+            System.out.println("OS:"+os);
             String test = "./test/ret.jpg";
             String ret = test.replaceAll("\\.\\/", "kanemih/");
+            LinkedList<String> hashCmd = new LinkedList<String>();
+            if(NCLWUtil.isWindows()){
+                hashCmd.add("echo");
+                hashCmd.add("%PATH%");
+                hashCmd.add("|");
+                hashCmd.add("grep");
+                hashCmd.add("java");
+            }else{
+                hashCmd.add("which");
+                hashCmd.add("java");
+            }
+
 
             LinkedList<String> cmd = new LinkedList<String>();
             cmd.add("docker");

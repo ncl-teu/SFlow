@@ -6,6 +6,7 @@ import org.ncl.workflow.resource.ResourceMgr;
 import org.ncl.workflow.util.NCLWUtil;
 
 import java.io.*;
+import java.net.Inet4Address;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
@@ -35,6 +36,7 @@ public class NCLWMain {
 
             Thread mgmtThread = new Thread(NCLWEngine.getIns());
             mgmtThread.start();
+            System.out.println("***Started at "+ Inet4Address.getLocalHost().getHostAddress());
    /*
         for(int i=0;i<10000;i++){
             double load = ResourceMgr.getIns().getAveVCPULoad();

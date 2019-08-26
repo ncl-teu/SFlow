@@ -53,8 +53,11 @@ public class NCLWUtil {
 
     public static String docker_localdir;
 
+    public static int sched_algorithm;
 
 
+
+    private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
 
     /**
      * Constructor
@@ -62,6 +65,18 @@ public class NCLWUtil {
     private  NCLWUtil() {
         NCLWUtil.rDataGen = new RandomDataImpl();
 
+    }
+
+    public static boolean isLinux(){
+        return OS_NAME.startsWith("linux");
+    }
+
+    public static boolean isWindows(){
+        return OS_NAME.startsWith("windows");
+    }
+
+    public static boolean isMac(){
+        return OS_NAME.startsWith("mac");
     }
 
     /**
@@ -82,7 +97,7 @@ public class NCLWUtil {
      */
     public void initialize(String propName){
         try{
-            //險ｭ螳壽ュ蝣ｱ
+            //Read
             NCLWUtil.prop = new Properties();
             NCLWUtil.prop.load(new FileInputStream(propName));
             NCLWUtil.rmgr_send_thread_num = Integer.valueOf( NCLWUtil.prop.getProperty("rmgr_send_thread_num"));
@@ -100,6 +115,7 @@ public class NCLWUtil {
             NCLWUtil.docker_repository_userid =  NCLWUtil.prop.getProperty("docker_repository_userid");
             NCLWUtil.docker_repository_password = NCLWUtil.prop.getProperty("docker_repository_password");
             NCLWUtil.docker_localdir = NCLWUtil.prop.getProperty("docker_localdir");
+            NCLWUtil.sched_algorithm = Integer.valueOf(NCLWUtil.prop.getProperty("sched_algorithm"));
 
 
 
