@@ -15,8 +15,17 @@
     <property name="ccndir" location="classes/net/gripps/ccn"/>
     <property name="clouddir" location="classes/net/gripps/cloud"/>
     <property name="workflowdir" location="classes/org/ncl/workflow"/>
+    <property name="dir_tasksched" location="${dist}/tasksched"/>
+    <property name="dir_ccn" location="${dist}/ccn"/>
+    <property name="dir_mapreduce" location="${dist}/mapreduce"/>
+    <property name="dir_gridp2p" location="${dist}/gridp2p"/>
+    <property name="dir_sfc" location="${dist}/sfc"/>
+    <property name="dir_mobileedgecomp" location="${dist}/mobileedgecomp"/>
+    <property name="dir_nclw" location="${dist}/nclw"/>
 
-  <target name="clean">
+
+
+    <target name="clean">
     <!--Delete created directory trees-->
     <delete dir="${build}" includeEmptyDirs="true" />
     <delete includeEmptyDirs="true">
@@ -38,6 +47,14 @@
     <mkdir dir="${tests}" />
     <mkdir dir="${reports}" />
     <mkdir dir="${htmlreports}" />
+      <mkdir dir="${dir_ccn}" />
+      <mkdir dir="${dir_gridp2p}" />
+      <mkdir dir="${dir_mapreduce}" />
+      <mkdir dir="${dir_mobileedgecomp}" />
+      <mkdir dir="${dir_nclw}" />
+      <mkdir dir="${dir_sfc}" />
+
+
   </target>
   <target name="resources">
     <copy todir="${build}">
@@ -58,7 +75,7 @@
   </target>
   <target name="build" depends="init, resources">
     <!--Compiles the java code from ${src} directory into ${build} directory-->
-    <javac destdir="${build}">
+    <javac encoding="utf-8" destdir="${build}">
       <src path="${src}" />
 
      <classpath path="${lib}/commons-math-2.0.jar" />
@@ -70,8 +87,13 @@
         <classpath path="${lib}/jackson-core-2.9.8.jar" />
         <classpath path="${lib}/jackson-databind-2.9.8.jar" />
         <classpath path="${lib}/commons-net-3.6.jar" />
-            <classpath path="${lib}/ncl-taskschedsim.jar"/>
-       <classpath path="${lib}/ncl-sfc.jar"/>
+        <classpath path="${lib}/docker-java-api-0.0.10-jar-with-dependencies.jar" />
+        <classpath path="${lib}/javax.json-api-1.1.4.jar" />
+        <classpath path="${lib}/javax.json-1.1.jar" />
+        <classpath path="${lib}/ganymed-ssh2-build210.jar" />
+        <classpath path="${lib}/jsch-0.1.55.jar" />
+
+
 
 
         <!--<classpath path="${lib}/commons-math3-3.2.jar" /> -->
@@ -92,47 +114,9 @@
       </fileset>
     </javadoc>
   </target>
-  <target name="build_tests" depends="init">
-    <!--Compiles the tests into ${tests} directory-->
-    <javac destdir="${tests}">
-      <src path="${src}" />
-        <classpath path="${lib}/commons-math-2.0.jar" />
-        <classpath path="${lib}/jdom-2.0.0.jar" />
-        <classpath path="${lib}/log4j-api-2.11.1.jar" />
-        <classpath path="${lib}/log4j-core-2.11.1.jar" />
-        <classpath path="${lib}/jsock-20190503.jar" />
-        <classpath path="${lib}/jackson-annotations-2.9.8.jar" />
-        <classpath path="${lib}/jackson-core-2.9.8.jar" />
-        <classpath path="${lib}/jackson-databind-2.9.8.jar" />
-        <classpath path="${lib}/commons-net-3.6.jar" />
-            <classpath path="${lib}/ncl-taskschedsim.jar"/>
-       <classpath path="${lib}/ncl-sfc.jar"/>
-        <include name="**/*Test.java" />
-      <include name="**/Test*.java" />
-      <src path="${src}" />
-    </javac>
-  </target>
-  <target name="run_tests" depends="build, build_tests">
-    <junit printsummary="yes">
-      <classpath path="${build}" />
-      <classpath path="${tests}" />
-      <formatter type="xml" usefile="true" />
-      <batchtest todir="${reports}">
-        <fileset dir="${tests}">
-          <include name="**/*Test.class" />
-          <include name="**/Test*.class" />
-        </fileset>
-      </batchtest>
-    </junit>
-  </target>
-  <target name="report" depends="run_tests">
-    <junitreport todir="${reports}">
-      <fileset dir="${reports}">
-        <include name="TEST-*.xml" />
-      </fileset>
-      <report format="noframes" todir="${htmlreports}" />
-    </junitreport>
-  </target>
+
+
+
     <target name="encoding">
         <native2ascii src="src" dest="src2">
             <!-- <exclude name="**/*.java" />-->
@@ -140,36 +124,81 @@
             <include name="**/*.properties" />
         </native2ascii>
     </target>
-    <target name="build_nclw" depends="init, resources">
-        <!--Compiles the java code from ${src} directory into ${build} directory-->
-        <javac destdir="${build}">
-            <src path="${src}/org" />
 
-            <classpath path="${lib}/commons-math-2.0.jar" />
-            <classpath path="${lib}/jdom-2.0.0.jar" />
-            <classpath path="${lib}/log4j-api-2.11.1.jar" />
-            <classpath path="${lib}/log4j-core-2.11.1.jar" />
-            <classpath path="${lib}/jsock-20190503.jar" />
-            <classpath path="${lib}/jackson-annotations-2.9.8.jar" />
-            <classpath path="${lib}/jackson-core-2.9.8.jar" />
-            <classpath path="${lib}/jackson-databind-2.9.8.jar" />
-            <classpath path="${lib}/commons-net-3.6.jar" />
-                <classpath path="${lib}/ncl-taskschedsim.jar"/>
-       <classpath path="${lib}/ncl-sfc.jar"/>
-            <!--<classpath path="${lib}/commons-math3-3.2.jar" /> -->
-            <!--<exclude name="**/*Test.java" />
-            <exclude name="**/Test*.java" />  -->
-        </javac>
-    </target>
-    <target name="dist_nclw" depends="build_nclw">
-        <!--Put everything in ${build} into the MyProject-${DSTAMP}.jar file-->
-        <tstamp />
-        <jar jarfile="${dist}/nclw-${DSTAMP}.jar" basedir="${build}" />
-    </target>
-    <target name="jar_sched" >
-        <jar jarfile="${lib}/ncl-taskschedsim.jar" basedir="${build}">
+    <target name="dist_sfc" depends="build">
+        <jar jarfile="${lib}/ncl-sfc.jar" basedir="${build}"  includes="net/gripps/cloud/core/**,net/gripps/cloud/mapreduce/**,net/gripps/cloud/nfv/**,net/gripps/cloud/CloudUtil.class"/>
+        <mkdir dir="${dir_sfc}" />
+        <mkdir dir="${dir_sfc}/lib/"/>
+        <copy file="${lib}/ncl-taskschedsim.jar" todir="${dir_sfc}/lib/"/>
+        <copy file="${lib}/ncl-sfc.jar" todir="${dir_sfc}/lib/"/>
+        <copy file="${lib}/commons-collections-3.2.jar" todir="${dir_sfc}/lib/"/>
+        <copy file="${lib}/commons-math-2.0.jar" todir="${dir_sfc}/lib/"/>
+        <copy file="${lib}/log4j-api-2.11.1.jar" todir="${dir_sfc}/lib/"/>
+        <copy file="${lib}/log4j-core-2.11.1.jar" todir="${dir_sfc}/lib/"/>
 
-        </jar>
+
+        <copy file="nfv.properties" todir="${dir_sfc}"/>
+        <copy file="nclw_nfvrun.sh" todir="${dir_sfc}"/>
+        <copy file="nclw_nfvrun.bat" todir="${dir_sfc}"/>
+    </target>
+
+    <target name="dist_workflow" depends="build">
+        <jar jarfile="${lib}/ncl-sfcworkflow.jar" basedir="${build}"  includes="org/**"/>
+        <mkdir dir="${dir_nclw}" />
+        <mkdir dir="${dir_nclw}/lib/"/>
+        <mkdir dir="${dir_nclw}/nclw/"/>
+        <copy file="${lib}/ncl-sfcworkflow.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/ncl-taskschedsim.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/ncl-sfc.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/commons-collections-3.2.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/commons-math-2.0.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/commons-net-3.6.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/ganymed-ssh2-build210.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jackson-annotations-2.9.8.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jackson-core-2.9.8.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jackson-databind-2.9.8.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jdom-2.0.0.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jsock-20190503.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/log4j-api-2.11.1.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/log4j-core-2.11.1.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="nclw/job_ncl.json" todir="${dir_nclw}/nclw"/>
+        <copy file="nclw/env_ncl.json" todir="${dir_nclw}/nclw"/>
+
+        <copy file="nclw2.properties" todir="${dir_nclw}"/>
+        <copy file="nclw_worker.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_delegator.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_worker.bat" todir="${dir_nclw}"/>
+        <copy file="nclw_delegator.bat" todir="${dir_nclw}"/>
+        <copy file="nclw_moduleup.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_startworker.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_stopworker.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_hosts" todir="${dir_nclw}"/>
+        <copy file="${lib}/jsch-0.1.55.jar" todir="${dir_nclw}/lib/"/>
+
+
+    </target>
+
+
+    <target name="dist_tasksched" depends="build">
+        <jar jarfile="${lib}/ncl-taskschedsim.jar" basedir="${build}"  includes="net/gripps/clustering/**,net/gripps/environment/**,net/gripps/FFT/**,
+net/gripps/GJ/**,net/gripps/grouping/**,net/gripps/mapping/**,net/gripps/scheduling/**,net/gripps/util/**"/>
+        <mkdir dir="${dir_tasksched}" />
+        <mkdir dir="${dir_tasksched}/lib/"/>
+        <mkdir dir="${dir_tasksched}/dax/"/>
+        <mkdir dir="${dir_tasksched}/daxbak/"/>
+        <copy file="${lib}/ncl-taskschedsim.jar" todir="${dir_tasksched}/lib/"/>
+        <copy file="${lib}/commons-collections-3.2.jar" todir="${dir_tasksched}/lib/"/>
+        <copy file="${lib}/commons-math-2.0.jar" todir="${dir_tasksched}/lib/"/>
+        <copy file="hetero1.properties" todir="${dir_tasksched}"/>
+        <copy file="run_tasksched.sh" todir="${dir_tasksched}"/>
+        <copy file="run_tasksched.bat" todir="${dir_tasksched}"/>
+        <copy todir="${dir_tasksched}/dax/">
+            <fileset dir="dax" includes="*.xml"/>
+        </copy>
+        <copy todir="${dir_tasksched}/daxbak/">
+            <fileset dir="daxbak" includes="*.xml"/>
+        </copy>
+
     </target>
     <target name="jar_sfc" >
         <jar jarfile="${lib}/ncl-sfc.jar" basedir="${build}">
