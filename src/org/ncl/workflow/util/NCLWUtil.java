@@ -55,6 +55,8 @@ public class NCLWUtil {
 
     public static int sched_algorithm;
 
+    public static String input_file_transfer_protocol;
+
 
 
     private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
@@ -116,6 +118,7 @@ public class NCLWUtil {
             NCLWUtil.docker_repository_password = NCLWUtil.prop.getProperty("docker_repository_password");
             NCLWUtil.docker_localdir = NCLWUtil.prop.getProperty("docker_localdir");
             NCLWUtil.sched_algorithm = Integer.valueOf(NCLWUtil.prop.getProperty("sched_algorithm"));
+            NCLWUtil.input_file_transfer_protocol = NCLWUtil.prop.getProperty("input_file_transfer_protocol");
 
 
 

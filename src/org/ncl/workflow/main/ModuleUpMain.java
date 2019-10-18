@@ -20,10 +20,13 @@ public class ModuleUpMain {
 
         //hostsファイル取得
         String hostsFile = args[0];
+        String user = args[1];
+
         if(args.length == 0){
             System.out.println("Please input hosts file...");
             System.exit(-1);
         }
+
         try{
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(hostsFile), "UTF-8"));
         // 最終行まで読み込む
@@ -62,7 +65,8 @@ public class ModuleUpMain {
                 if (result) {
                     SCPClient scp = conn.createSCPClient();
                     //scp.put("/home/kanemih/gripps/", h.getPath(), "0755");
-                    ModuleUpMain.putDir(conn, "/home/kanemih/gripps/", h.getPath(), "0777");
+
+                    ModuleUpMain.putDir(conn, "/home/"+user+"/gripps/", h.getPath(), "0777");
 
                     SshCommandExecute ssh1 = new SshCommandExecute(conn.openSession());
                     ssh1.exec("ls -l");

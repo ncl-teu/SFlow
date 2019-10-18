@@ -210,8 +210,13 @@ public class Task implements Serializable, Runnable {
                 cmd = cmd.replace(str, prefilePath);
                 File file = new File(prefilePath);
                 if(!file.exists()){
-                    //Get the file via FTP.
-                    this.getFileByFTP(prefilePath);
+                    if(NCLWUtil.input_file_transfer_protocol.equals("scp")){
+                        this.getFIleBySCP(prefilePath);
+                    }else{
+                        //Get the file via FTP.
+                        this.getFileByFTP(prefilePath);
+                    }
+
                 }else{
                 }
                 retCmd.add(prefilePath);
@@ -352,6 +357,13 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
         dockerCmd.add("docker");
         dockerCmd.add("run");
         dockerCmd.add("--rm");
+        /*dockerCmd.add("-v");
+        dockerCmd.add("/etc/group:/etc/group:ro");
+        dockerCmd.add("-v");
+        dockerCmd.add("/etc/passwd:/etc/passwd:ro");
+        dockerCmd.add("-u");
+        dockerCmd.add("$(id -u $USER):$(id -g $USER)");
+*/
         // dockerCmd.add("-it");
         dockerCmd.add("-v");
         dockerCmd.add(this.cd + "/"+":"+this.cd + "/");
@@ -420,6 +432,41 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
         return true;
     }
 
+    public void getFIleBySCP(String filePath){
+        try {
+            //Try to save docker tar file.
+            Connection conn = new Connection(NCLWUtil.ftp_server_ip);
+            ConnectionInfo info = conn.connect();
+            boolean result = conn.authenticateWithPassword(NCLWUtil.ftp_server_id,
+                    NCLWUtil.ftp_server_pass);
+            if (result) {
+                SCPClient scp = conn.createSCPClient();
+               // String localPath =  NCLWUtil.ftp_server_homedirName + "/";
+                //File dir = new File(filePath);
+                File  file = new File(filePath);
+                if(!(file.getParent() == null)){
+                    File dir = new File(file.getParent());
+                    if(!dir.exists()){
+                        dir.mkdirs();
+                    }
+                }
+                String newPath = filePath.replace(filePath, file.getName());
+
+
+
+
+                String serverPath = "/"+NCLWUtil.ftp_server_homedirName + "/"+this.getJobID() + "/"+file.getName();
+                scp.get(serverPath, newPath);
+
+                conn.close();
+            } else {
+                System.out.println("SCP Connection Failed...");
+            }
+            conn.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
     public void getFileByFTP(String filePath) {
         FileOutputStream os = null;
         File  file = new File(filePath);
@@ -481,6 +528,39 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
         return path.replaceAll("\\./", this.cd+"/");
     }
 
+    public boolean isDockerExecutable(LinkedList<String> in_cmd, String imageName){
+
+
+        try{
+            Runtime r = Runtime.getRuntime();
+            String[] hashcmd = new String[]{in_cmd.get(0), in_cmd.get(1)};
+
+            Process p = r.exec(hashcmd);
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = null;
+            StringBuffer strBuf = new StringBuffer();
+            while ((line = br.readLine()) != null) {
+                strBuf.append(line);
+            }
+            String ret = strBuf.toString();
+
+            //nullもしくはno command形式なら，ダメということ．
+            if(ret.indexOf(imageName)==-1){
+                return false;
+            }else{
+                return true;
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return true;
+
+
+    }
+
+
     public boolean isExecutable(LinkedList<String> in_cmd){
 
 
@@ -497,6 +577,7 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
                 strBuf.append(line);
             }
             String ret = strBuf.toString();
+
             //nullもしくはno command形式なら，ダメということ．
             if(ret.equals("")||(ret.indexOf("no "+in_cmd.get(0) + " in")!=-1)){
                 return false;
@@ -570,7 +651,9 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
                         dockerExistCmd.add(this.docker_image);
 
                         LinkedList<String> dockerCmd = new LinkedList<String>();
-                        if(this.isExecutable(dockerExistCmd)){
+                        if(this.isDockerExecutable(dockerExistCmd, this.docker_image)){
+                            System.out.println("****OK! Executable2!!!****");
+
                             //execute by docker.
                             dockerCmd = this.generateDockerRunCmd(actualCmd);
                         }else{

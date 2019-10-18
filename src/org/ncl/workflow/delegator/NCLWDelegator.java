@@ -5,6 +5,7 @@ import net.gripps.cloud.core.VCPU;
 import net.gripps.cloud.core.VM;
 import net.gripps.cloud.nfv.NFVEnvironment;
 import net.gripps.cloud.nfv.NFVUtil;
+import net.gripps.cloud.nfv.clustering.HierarchicalVNFClusteringAlgorithm;
 import net.gripps.cloud.nfv.clustering.SF_CUVAlgorithm;
 import net.gripps.cloud.nfv.listscheduling.FWS_VNFAlgorithm;
 import net.gripps.cloud.nfv.listscheduling.HEFT_VNFAlgorithm;
@@ -83,6 +84,14 @@ public class NCLWDelegator {
                 System.out.println("SLR[CoordVNF]:"+ "makespan:"+NFVUtil.getRoundedValue(coord.getMakeSpan()/*/sf_cuv.getTotalCPProcTimeAtMaxSpeed()*/) +" / # of vCPUs: "+coord.getAssignedVCPUMap().size()+ "/ # of Hosts:"+coord.getHostSet().size()
                         +"/# of Ins:"+coord.calcTotalFunctionInstanceNum());
                 break;
+            case 4:
+                HierarchicalVNFClusteringAlgorithm h = new HierarchicalVNFClusteringAlgorithm(env,sfc);
+                h.configLevel();
+                h.mainProcess();;
+                sfc = h.getSfc();
+                System.out.println("SLR[HClustering]:"+ "makespan:"+NFVUtil.getRoundedValue(h.getMakeSpan()/*/sf_cuv.getTotalCPProcTimeAtMaxSpeed()*/) +" / # of vCPUs: "+h.getAssignedVCPUMap().size()+ "/ # of Hosts:"+h.getHostSet().size()
+                        +"/# of Ins:"+h.calcTotalFunctionInstanceNum());
+                break;
             default:
                 SF_CUVAlgorithm sf_cuv2 = new SF_CUVAlgorithm(env, sfc);
 
@@ -94,6 +103,14 @@ public class NCLWDelegator {
                 break;
 
         }
+        Iterator<VNF> vnfIte = sfc.getVnfMap().values().iterator();
+        while(vnfIte.hasNext()){
+            VNF vnf = vnfIte.next();
+            VCPU vcpu = env.getGlobal_vcpuMap().get(vnf.getvCPUID());
+            VM vm = NCLWUtil.findVM(env, vnf.getvCPUID());
+            System.out.println("VNF:"+vnf.getIDVector().get(1) + "@"+vnf.getvCPUID()+"@"+vm.getIpAddr());
+        }
+
 
 
         Iterator<Long> startIte = sfc.getStartVNFSet().iterator();

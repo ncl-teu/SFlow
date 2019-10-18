@@ -120,7 +120,7 @@ public class RecvThread implements Runnable {
                 }
                 System.out.println("Obtained Msg:"+data.getMsg());
                 ProcessMgr.getIns().setFinishTime(System.currentTimeMillis());
-                System.out.println("Elappsed time:"+ NCLWUtil.getRoundedValue(ProcessMgr.getIns().getFinishTime() - ProcessMgr.getIns().getStartTime()/(double)1000) + "(sec)");
+                System.out.println("Elappsed time:"+ NCLWUtil.getRoundedValue((ProcessMgr.getIns().getFinishTime() - ProcessMgr.getIns().getStartTime())/(double)1000) + "(sec)");
                 System.exit(0);
 
             }
@@ -165,14 +165,19 @@ public class RecvThread implements Runnable {
                     //FileInputStream fis = new FileInputStream(file);
                     ByteArrayInputStream bis = new ByteArrayInputStream(data.getBytes());
                     //FileInputStream fis = data.getFis();
-                    FileOutputStream fos = new FileOutputStream(data.getWriteFilePath());
-                    int fileLength;
-                    while ((fileLength = bis.read(buffer)) > 0) {
-                        //while ((fileLength = fis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, fileLength);
+                    if(file.exists()){
+                    }else{
+                        FileOutputStream fos = new FileOutputStream(data.getWriteFilePath());
+                        int fileLength;
+                        while ((fileLength = bis.read(buffer)) > 0) {
+                            //while ((fileLength = fis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, fileLength);
+                        }
+                        fos.flush();
+                        fos.close();
                     }
-                    fos.flush();
-                    fos.close();
+
+
                     //  fis.close();
                     bis.close();
                     out.flush();

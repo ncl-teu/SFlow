@@ -20,6 +20,7 @@ import java.util.LinkedList;
  * - インスタンス = Dockerイメージ
  *
  * docker build -t 名前 .
+ * これでimage登録される．
  * 1. dockerイメージをtar保存する．
  * step1. docker save イメージ名 -o 名前.tar
  * ~~~~~~~~~~ここから↓は，実行時~~~~~~~
@@ -29,8 +30,9 @@ import java.util.LinkedList;
  *  step2. 実行する．
  *  docker run -t busybox /bin/echo "Hello World"
  *  [成功例]
- *  docker run --rm -v `pwd`:/home/kanemih/docker2 cvt /home/kanemih/docker2/ret.jpg /home/kanemih/docker2/out.jpg
- *  docker run -it -v `pwd`:/home/kanemih/ cvt /home/kanemih/docker2/ret.jpg /home/kanemih/docker2/out.jpg
+ *  docker run --rm -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) -v /home/kanemih/gripps/:/home/kanemih/gripps/ nclconvert -crop 5%x100% /home/kanemih/gripps/ncltest/ncltest.png /home/kanemih/gripps/ncltest/outNOW.jpg
+ *  docker run --rm -v [カレンドディレクトリ]:[カレントディレクトリ] image名 [コマンドのオプション部]
+ *  --rm -> -it としてもOK
  *  [コマンドがあるかどうか]
  *  1. which [コマンド]
  *  ubuntu, jetsonの場合，無ければ，null

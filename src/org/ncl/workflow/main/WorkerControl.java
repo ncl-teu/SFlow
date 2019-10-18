@@ -25,6 +25,7 @@ public class WorkerControl {
         String hostsFile = args[1];
 
 
+
          try{
              BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(hostsFile), "UTF-8"));
              // 最終行まで読み込む
@@ -65,7 +66,11 @@ public class WorkerControl {
 
                      Session sess= conn.openSession();
                      if(option.equals("start")){
-                         sess.execCommand("cd " + h.getPath()+" && "+ "./nclw_worker.sh");
+                         if(args.length>=3){
+                             String shFile = args[2];
+                             sess.execCommand("cd " + h.getPath()+" && "+ shFile);
+                         }
+
                      }else{
                          sess.execCommand("pkill -KILL -f nclw");
 
