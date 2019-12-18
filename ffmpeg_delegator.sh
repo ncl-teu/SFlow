@@ -1,0 +1,2 @@
+#!/bin/bash
+java    -cp nclw/:lib/ncl-taskschedsim.jar:lib/ncl-sfc.jar:lib/ncl-sfcworkflow.jar:lib/commons-net-3.6.jar:lib/commons-math-2.0.jar:lib/log4j-api-2.11.1.jar:lib/ganymed-ssh2-build210.jar:lib/log4j-core-2.11.1.jar:lib/jackson-core-2.9.8.jar:lib/jackson-databind-2.9.8.jar:lib/jackson-annotations-2.9.8.jar:lib/protobuf-java-2.6.1.jar:/libsqlite-jdbc-3.23.1.jar:lib/jndn.jar:lib/jndn-forwarder-ncl.jar:lib/jndn-utils.jar:lib/jndn-management-master-1.2.2.jar org.ncl.workflow.delegator.NCLWDelegator nclw/env.json nclw/job_ffmpeg.json nclw2.properties
