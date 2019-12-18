@@ -2,66 +2,316 @@
   "job_id": 1,
   "task_list": [
     {
-      "task_id": 1, "workload": 4000, "type": 1, "usage": 55.5, "cmd": "convert -crop 25%x100% $R^./ncltest/ncltest.png ./ncltest/out.png", "out_file_list": [
+      "task_id": 1, "workload": 4000, "type": 1, "usage": 55.5, "cmd": "convert -crop 5%x100% $R^./ncltest/ncltest.png ./ncltest/out.png",
+      "out_file_list": [
       { "path": "./ncltest/out-0.png", "size": 2,"dest_task_id": [2 ] },
       { "path": "./ncltest/out-1.png", "size": 2,"dest_task_id": [3 ] },
       { "path": "./ncltest/out-2.png", "size": 2,"dest_task_id": [4 ] },
-      { "path": "./ncltest/out-3.png", "size": 2,"dest_task_id": [5 ] }
+      { "path": "./ncltest/out-3.png", "size": 2,"dest_task_id": [5 ] },
+      { "path": "./ncltest/out-4.png", "size": 2,"dest_task_id": [6 ] },
+      { "path": "./ncltest/out-5.png", "size": 2,"dest_task_id": [7 ] },
+      { "path": "./ncltest/out-6.png", "size": 2,"dest_task_id": [8 ] },
+      { "path": "./ncltest/out-7.png", "size": 2,"dest_task_id": [9 ] },
+      { "path": "./ncltest/out-8.png", "size": 2,"dest_task_id": [10 ] },
+      { "path": "./ncltest/out-9.png", "size": 2,"dest_task_id": [11] },
+      { "path": "./ncltest/out-10.png", "size": 2,"dest_task_id": [12 ] },
+      { "path": "./ncltest/out-11.png", "size": 2,"dest_task_id": [13 ] },
+      { "path": "./ncltest/out-12.png", "size": 2,"dest_task_id": [14 ] },
+      { "path": "./ncltest/out-13.png", "size": 2,"dest_task_id": [15 ] },
+      { "path": "./ncltest/out-14.png", "size": 2,"dest_task_id": [16 ] },
+      { "path": "./ncltest/out-15.png", "size": 2,"dest_task_id": [17 ] },
+      { "path": "./ncltest/out-16.png", "size": 2,"dest_task_id": [18 ] },
+      { "path": "./ncltest/out-17.png", "size": 2,"dest_task_id": [19 ] },
+      { "path": "./ncltest/out-18.png", "size": 2,"dest_task_id": [20 ] },
+      { "path": "./ncltest/out-19.png", "size": 2,"dest_task_id": [21 ] }
     ],
       "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
       "task_id": 2, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack0.png",
       "out_file_list": [
-        {"path": "./ncltest/outblack0.png", "size": 1, "dest_task_id": [6] }
-      ]
+        {"path": "./ncltest/outblack0.png", "size": 1, "dest_task_id": [22] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
       "task_id": 3, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack1.png",
       "out_file_list": [
-        {"path": "./ncltest/outblack1.png", "size": 1, "dest_task_id": [7] }
-      ]
+        {"path": "./ncltest/outblack1.png", "size": 1, "dest_task_id": [23] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
       "task_id": 4, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack2.png",
       "out_file_list": [
-        {"path": "./ncltest/outblack2.png", "size": 1, "dest_task_id": [8] }
-      ]
+        {"path": "./ncltest/outblack2.png", "size": 1, "dest_task_id": [24] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
       "task_id": 5, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack3.png",
       "out_file_list": [
-        {"path": "./ncltest/outblack3.png", "size": 1, "dest_task_id": [9] }
-      ]
+        {"path": "./ncltest/outblack3.png", "size": 1, "dest_task_id": [25] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
-      "task_id": 6, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^2 -quality 100 ./ncltest/outblack0_c.jpg",
+      "task_id": 6, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack4.png",
       "out_file_list": [
-        {"path": "./ncltest/outblack0_c.jpg", "size": 1, "dest_task_id": [10] }
-      ]
+        {"path": "./ncltest/outblack4.png", "size": 1, "dest_task_id": [26] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
-      "task_id": 7, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^3 -quality 100 ./ncltest/outblack1_c.jpg",
+      "task_id": 7, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack5.png",
       "out_file_list": [
-        {"path": "./ncltest/outblack1_c.jpg", "size": 1, "dest_task_id": [10] }
-      ]
+        {"path": "./ncltest/outblack5.png", "size": 1, "dest_task_id": [27] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
-      "task_id": 8, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^4 -quality 100 ./ncltest/outblack2_c.jpg",
+      "task_id": 8, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack6.png",
       "out_file_list": [
-        {"path": "./ncltest/outblack2_c.jpg", "size": 1, "dest_task_id": [10] }
-      ]
+        {"path": "./ncltest/outblack6.png", "size": 1, "dest_task_id": [28] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
-      "task_id": 9, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^5 -quality 100 ./ncltest/outblack3_c.jpg",
+      "task_id": 9, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack7.png",
       "out_file_list": [
-        {"path": "./ncltest/outblack3_c.jpg", "size": 1, "dest_task_id": [10] }
-      ]
+        {"path": "./ncltest/outblack7.png", "size": 1, "dest_task_id": [29] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
     },
     {
-      "task_id": 10, "workload": 10000, "type": 2, "usage": 55.5, "cmd": "montage $F^6 $F^7 $F^8 $F^9  ./ncltest/result.jpg",
+      "task_id": 10, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack8.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack8.png", "size": 1, "dest_task_id": [30] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 11, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack9.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack9.png", "size": 1, "dest_task_id": [31] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 12, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack10.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack10.png", "size": 1, "dest_task_id": [32] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 13, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack11.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack11.png", "size": 1, "dest_task_id": [33] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 14, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack12.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack12.png", "size": 1, "dest_task_id": [34] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 15, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack13.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack13.png", "size": 1, "dest_task_id": [35] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 16, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack14.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack14.png", "size": 1, "dest_task_id": [36] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 17, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack15.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack15.png", "size": 1, "dest_task_id": [37] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 18, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack16.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack16.png", "size": 1, "dest_task_id": [38] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 19, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack17.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack17.png", "size": 1, "dest_task_id": [39] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 20, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack18.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack18.png", "size": 1, "dest_task_id": [40] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 21, "workload": 6000, "type": 1, "usage": 55.5, "cmd": "convert $F^1 -fill black -colorize 70 ./ncltest/outblack19.png",
+      "out_file_list": [
+        {"path": "./ncltest/outblack19.png", "size": 1, "dest_task_id": [41] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 22, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^2 -quality 100 ./ncltest/outblack0_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack0_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 23, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^3 -quality 100 ./ncltest/outblack1_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack1_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 24, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^4 -quality 100 ./ncltest/outblack2_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack2_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclconvert.tar", "docker-imagename": "nclconvert"
+    },
+    {
+      "task_id": 25, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^5 -quality 100 ./ncltest/outblack3_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack3_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 26, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^6 -quality 100 ./ncltest/outblack4_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack4_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 27, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^7 -quality 100 ./ncltest/outblack5_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack5_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 28, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^8 -quality 100 ./ncltest/outblack6_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack6_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 29, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^9 -quality 100 ./ncltest/outblack7_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack7_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 30, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^10 -quality 100 ./ncltest/outblack8_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack8_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 31, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^11 -quality 100 ./ncltest/outblack9_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack9_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 32, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^12 -quality 100 ./ncltest/outblack10_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack10_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 33, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^13 -quality 100 ./ncltest/outblack11_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack11_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 34, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^14 -quality 100 ./ncltest/outblack12_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack12_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 35, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^15 -quality 100 ./ncltest/outblack13_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack13_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 36, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^16 -quality 100 ./ncltest/outblack14_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack14_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 37, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^17 -quality 100 ./ncltest/outblack15_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack15_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 38, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^18 -quality 100 ./ncltest/outblack16_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack16_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 39, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^19 -quality 100 ./ncltest/outblack17_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack17_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 40, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^20 -quality 100 ./ncltest/outblack18_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack18_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 41, "workload": 8000, "type": 1, "usage": 55.5, "cmd": "convert $F^21 -quality 100 ./ncltest/outblack19_c.jpg",
+      "out_file_list": [
+        {"path": "./ncltest/outblack19_c.jpg", "size": 1, "dest_task_id": [42] }
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
+    },
+    {
+      "task_id": 42, "workload": 10000, "type": 2, "usage": 55.5, "cmd": "montage $F^22 $F^23 $F^24 $F^25 $F^26 $F^27 $F^28 $F^29 $F^30 $F^31 $F^32 $F^33 $F^34 $F^35 $F^36 $F^37 $F^38 $F^39 $F^40 $F^41  ./ncltest/result.jpg",
       "out_file_list": [
         {"path": "./ncltest/result.jpg", "size": 3, "dest_task_id": [] }
-      ]
+      ],
+      "docker-tarname":"nclmontage.tar", "docker-imagename": "nclmontage"
     }
   ]}
