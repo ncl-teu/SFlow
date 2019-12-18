@@ -1,71 +1,47 @@
-package org.ncl.workflow.comm;
+package org.ncl.workflow.ccn.sfc.process;
 
 import net.gripps.cloud.nfv.sfc.SFC;
+import org.ncl.workflow.comm.NCLWData;
+import org.ncl.workflow.comm.RecvThread;
+import org.ncl.workflow.comm.WorkflowJob;
 import org.ncl.workflow.engine.NCLWEngine;
 import org.ncl.workflow.engine.Task;
 import org.ncl.workflow.util.NCLWUtil;
 import org.ncl.workflow.util.ProcessMgr;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-
 /**
- * Created by Hidehiro Kanemitsu on 2019/05/01.
+ * Created by Hidehiro Kanemitsu on 2019/11/22.
  */
-public class RecvThread implements Runnable {
+public class NclwNFDRecvThread extends RecvThread {
 
-    protected LinkedBlockingQueue<NCLWData> recvDataQueue;
-
-    protected int port;
-
-    protected Socket client;
-
-    protected boolean endFlg;
-
-
-    public RecvThread() {
-        this.recvDataQueue = new LinkedBlockingQueue<NCLWData>();
+    public NclwNFDRecvThread() {
     }
 
-    public RecvThread(LinkedBlockingQueue<NCLWData> recvDataQueue, int port, Socket in_socket) {
-        this.recvDataQueue = recvDataQueue;
-        this.port = port;
-        this.client = in_socket;
-        this.endFlg = false;
+    public NclwNFDRecvThread(LinkedBlockingQueue<NCLWData> recvDataQueue, int port, Socket in_socket) {
+        super(recvDataQueue, port, in_socket);
     }
 
-    public RecvThread( int port, Socket in_client) {
-        this.recvDataQueue = new LinkedBlockingQueue<NCLWData>();
-        this.port = port;
-        this.client = in_client;
-        this.endFlg = false;
-
+    public NclwNFDRecvThread(int port, Socket in_client) {
+        super(port, in_client);
     }
 
-    @Override
-    public void run() {
-        try{
-            while(true){
-                this.recvProcess();
-                Thread.sleep(100);
-                if(this.endFlg){
-                    break;
-                }
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+    public NclwNFDRecvThread(LinkedBlockingQueue<NCLWData> recvDataQueue, int port) {
+        super(recvDataQueue, port,null);
+    }
 
-
+    public NclwNFDRecvThread(int port) {
+        super(port, null);
     }
 
     /**
      * NCLWDataを受信して，タスクへと渡す．
      */
+    @Override
     public void recvProcess() {
         byte[] buffer = new byte[512]; // ファイル受信時のバッファ
         String msg = null;
@@ -85,7 +61,7 @@ public class RecvThread implements Runnable {
             //もしFromTaskIDがnullなら，startTask
             WorkflowJob job = data.getJob();
             SFC sfc = data.getSfc();
-            Task task;
+            NFDTask task;
 
             if(data.getToTaskID() == -1){
                 if(data.isFile()){
@@ -99,19 +75,19 @@ public class RecvThread implements Runnable {
                         }
                     }
 
-                   // String outPath = "/"+file.getParent()+ "/"+file.getName();
+                    // String outPath = "/"+file.getParent()+ "/"+file.getName();
                     //FileInputStream fis = new FileInputStream(file);
                     ByteArrayInputStream bis = new ByteArrayInputStream(data.getBytes());
                     //FileInputStream fis = data.getFis();
                     FileOutputStream fos = new FileOutputStream(data.getWriteFilePath());
                     int fileLength;
                     while ((fileLength = bis.read(buffer)) > 0) {
-                    //while ((fileLength = fis.read(buffer)) > 0) {
+                        //while ((fileLength = fis.read(buffer)) > 0) {
                         fos.write(buffer, 0, fileLength);
                     }
                     fos.flush();
                     fos.close();
-                  //  fis.close();
+                    //  fis.close();
                     bis.close();
                     out.flush();
                     out.close();
@@ -125,12 +101,12 @@ public class RecvThread implements Runnable {
 
             }
             String prefix = job.getJobID()+"^"+data.getToTaskID();
-            HashMap<String, Task> taskPool = NCLWEngine.getIns().getTaskPool();
+            HashMap<String, NFDTask> taskPool = NFDTaskEngine.getIns().getTaskPool();
             if(taskPool.containsKey(prefix)){
-                task = NCLWEngine.getIns().getTaskPool().get(prefix);
+                task = NFDTaskEngine.getIns().getTaskPool().get(prefix);
             }else{
-                task = job.getTaskMap().get(data.getToTaskID());
-                NCLWEngine.getIns().getTaskPool().put(prefix, task);
+                task = job.getNfdTaskMap().get(data.getToTaskID());
+                NFDTaskEngine.getIns().getTaskPool().put(prefix, task);
             }
 
 
@@ -144,7 +120,7 @@ public class RecvThread implements Runnable {
             task.setEnv(data.getEnv());
 
 
-            //The case that from Delegator.
+            //The case that from Delegator due to backtracking
             if(data.getFromTaskID() == -1){
 
 
@@ -201,16 +177,16 @@ public class RecvThread implements Runnable {
                      */
                 }
                 task.getInDataMap().put(data.getFromTaskID(), data);
-             //   int currentCnt = task.getArrivedCnt();
-               // task.setArrivedCnt(currentCnt+1);
+                //   int currentCnt = task.getArrivedCnt();
+                // task.setArrivedCnt(currentCnt+1);
                 //System.out.println("TaskID:"+task.getTaskID() + "CNT:"+task.getArrivedCnt());
 
             }
 
-           if(!task.isStarted()){
-               taskThread.start();
+            if(!task.isStarted()){
+                taskThread.start();
 
-           }
+            }
 
 
 
@@ -227,19 +203,4 @@ public class RecvThread implements Runnable {
         }
     }
 
-    public LinkedBlockingQueue<NCLWData> getRecvDataQueue() {
-        return recvDataQueue;
-    }
-
-    public void setRecvDataQueue(LinkedBlockingQueue<NCLWData> recvDataQueue) {
-        this.recvDataQueue = recvDataQueue;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
 }

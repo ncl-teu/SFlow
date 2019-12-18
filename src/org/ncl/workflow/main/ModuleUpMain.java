@@ -23,7 +23,7 @@ public class ModuleUpMain {
         String user = args[1];
 
         if(args.length == 0){
-            System.out.println("Please input hosts file...");
+            System.out.println("Please input host file.");
             System.exit(-1);
         }
 

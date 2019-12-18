@@ -1,6 +1,7 @@
 package org.ncl.workflow.comm;
 
 import net.gripps.clustering.common.aplmodel.CustomIDSet;
+import org.ncl.workflow.ccn.sfc.process.NFDTask;
 import org.ncl.workflow.engine.Task;
 
 import java.io.Serializable;
@@ -21,6 +22,8 @@ public class WorkflowJob implements Serializable {
      */
     private HashMap<Long, Task> taskMap;
 
+    private HashMap<Long, NFDTask> nfdTaskMap;
+
     /**
      *
      */
@@ -32,6 +35,14 @@ public class WorkflowJob implements Serializable {
         this.jobID = jobID;
         this.taskMap = taskMap;
         this.startTaskSet = new CustomIDSet();
+
+    }
+
+    public WorkflowJob(long jobID, HashMap<Long, Task> taskMap, HashMap<Long, NFDTask> nfdTaskMap) {
+        this.jobID = jobID;
+        this.taskMap = taskMap;
+        this.nfdTaskMap = nfdTaskMap;
+        this.startTaskSet = startTaskSet;
     }
 
     public long getJobID() {
@@ -56,5 +67,13 @@ public class WorkflowJob implements Serializable {
 
     public void setStartTaskSet(CustomIDSet startTaskSet) {
         this.startTaskSet = startTaskSet;
+    }
+
+    public HashMap<Long, NFDTask> getNfdTaskMap() {
+        return nfdTaskMap;
+    }
+
+    public void setNfdTaskMap(HashMap<Long, NFDTask> nfdTaskMap) {
+        this.nfdTaskMap = nfdTaskMap;
     }
 }

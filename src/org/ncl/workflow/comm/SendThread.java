@@ -18,7 +18,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class SendThread implements Runnable {
 
-    private LinkedBlockingQueue<NCLWData> dataQueue;
+    protected LinkedBlockingQueue<NCLWData> dataQueue;
 
     public SendThread(LinkedBlockingQueue<NCLWData> dataQueue) {
         this.dataQueue = dataQueue;
@@ -56,9 +56,6 @@ public class SendThread implements Runnable {
         NFVEnvironment env = data.getEnv();
         SFC sfc = data.getSfc();
         VNF srcVNF = sfc.findVNFByLastID(data.getFromTaskID());
-
-
-
 
             try{
 

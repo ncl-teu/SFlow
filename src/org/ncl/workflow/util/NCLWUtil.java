@@ -57,9 +57,19 @@ public class NCLWUtil {
 
     public static String input_file_transfer_protocol;
 
+    public static int nfd_strategy;
+
 
 
     private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
+
+    /**
+     * NFD用のポート番号
+     */
+    public  static int NFD_PORT = 6363;
+
+    public static String NCLW_PREFIX="/nclw/";
+
 
     /**
      * Constructor
@@ -119,6 +129,8 @@ public class NCLWUtil {
             NCLWUtil.docker_localdir = NCLWUtil.prop.getProperty("docker_localdir");
             NCLWUtil.sched_algorithm = Integer.valueOf(NCLWUtil.prop.getProperty("sched_algorithm"));
             NCLWUtil.input_file_transfer_protocol = NCLWUtil.prop.getProperty("input_file_transfer_protocol");
+            NCLWUtil.nfd_strategy = Integer.valueOf(NCLWUtil.prop.getProperty("nfd.strategy"));
+
 
 
 

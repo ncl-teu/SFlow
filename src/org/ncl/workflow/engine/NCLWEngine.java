@@ -23,32 +23,32 @@ public class NCLWEngine implements Runnable {
     /**
      * Singleton Instance
      */
-    private static NCLWEngine own;
+    private  static NCLWEngine own;
 
     /**
      * Node ID.
      * This process is run for each vCPU.
      */
-    private long nodeID;
+    protected long nodeID;
 
     /**
      * Thread Pool for sending/receiving data
      */
-    private ExecutorService exec;
+    protected ExecutorService exec;
 
 
     /**
      * Map of workflow jobs.
      */
-    private HashMap<Long, WorkflowJob> jobMap;
+    protected HashMap<Long, WorkflowJob> jobMap;
 
 
-    private HashMap<String, Task> taskPool;
+    private  HashMap<String, Task> taskPool;
 
-    private int port;
+    protected int port;
 
 
-    private NCLWEngine() {
+    protected NCLWEngine() {
         this.initialize();
     }
 

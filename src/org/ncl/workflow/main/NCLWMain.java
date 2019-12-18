@@ -37,15 +37,7 @@ public class NCLWMain {
             Thread mgmtThread = new Thread(NCLWEngine.getIns());
             mgmtThread.start();
             System.out.println("***Started at "+ Inet4Address.getLocalHost().getHostAddress());
-   /*
-        for(int i=0;i<10000;i++){
-            double load = ResourceMgr.getIns().getAveVCPULoad();
 
-            System.out.println("load:"+load);
-            Thread.sleep(1000);
-        }
-
-    */
         }catch(Exception e){
             System.out.println("Please input correct arguments [node ID] [property file name] ");
             System.exit(-1);

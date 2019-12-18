@@ -1,12 +1,11 @@
 package org.ncl.workflow.comm;
 
+import com.intel.jndn.forwarder.api.Face;
+import com.intel.jnfd.deamon.face.tcp.TcpFace;
 import net.gripps.cloud.nfv.NFVEnvironment;
 import net.gripps.cloud.nfv.sfc.SFC;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * Created by Hidehiro Kanemitsu on 2019/05/01.
@@ -76,6 +75,23 @@ public class NCLWData implements Serializable {
 
     private byte[] bytes;
 
+    /**
+     * All data i.e., NCLWData;
+     */
+    private byte[] allBytes;
+
+    String pitIPAddr;
+
+    /**
+     * DataがやってきたFace
+     */
+    //private Face inFace;
+
+    /**
+     * Dataの送り先Face
+     */
+    //private Face toFace;
+
 
     public NCLWData(long fromTaskID, long toTaskID, String ipAddr, int portNumber, SFC sfc, NFVEnvironment env, WorkflowJob job) {
         this.fromTaskID = fromTaskID;
@@ -114,6 +130,32 @@ public class NCLWData implements Serializable {
         this.sfc = sfc;
         this.env = env;
         this.job = job;
+    }
+
+    public byte[] convertToBytes(){
+        try{
+            ByteArrayOutputStream baos= new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(this);
+
+            baos.close();
+            oos.close();
+
+            //こんな感じでbyte配列になります。
+            this.allBytes = baos.toByteArray();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return this.allBytes;
+    }
+
+    public String getPitIPAddr() {
+        return pitIPAddr;
+    }
+
+    public void setPitIPAddr(String pitIPAddr) {
+        this.pitIPAddr = pitIPAddr;
     }
 
     public String getReadFilePath() {
@@ -212,8 +254,16 @@ public class NCLWData implements Serializable {
         this.job = job;
     }
 
+    public byte[] getAllBytes(){
+        if(this.allBytes == null){
+            this.convertToBytes();
+        }
+        return allBytes;
+    }
+
     public byte[] getBytes() {
-        return bytes;
+
+        return this.bytes;
     }
 
     public void setBytes(byte[] bytes) {

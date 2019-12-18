@@ -116,6 +116,8 @@ public class Task implements Serializable, Runnable {
     protected String docker_image;
 
 
+
+
     //protected int arrivedCnt;
 
 
@@ -269,6 +271,8 @@ public class Task implements Serializable, Runnable {
         return null;
 
     }
+
+
 
 
 
@@ -593,6 +597,17 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
 
     }
 
+    public SendThread  processSend(){
+        SendThread sender = new SendThread();
+        Thread sendThread = new Thread(sender);
+        //NCLWEngine.getIns().getExec().submit(sender);
+        sendThread.start();
+
+        return sender;
+    }
+
+
+
     @Override
     public void run() {
         System.out.println("Task:" + this.getTaskID() + "started");
@@ -704,6 +719,7 @@ System.out.println("Exec RESULT:"+retBuf.toString());
                             while (fIte.hasNext()) {
                                 FileSendInfo fsi = fIte.next();
 
+
                                 File file = new File(fsi.getPath());
                                 System.out.println("FileName:"+file.getPath() + "/Size:"+file.length());
                                 while(!file.exists()|| file.length()==0){
@@ -721,10 +737,14 @@ System.out.println("Exec RESULT:"+retBuf.toString());
 
                                     }
 
-                                    SendThread sender = new SendThread();
+                                    SendThread sender = this.processSend();
+
+                                   /* SendThread sender = new SendThread();
                                     Thread sendThread = new Thread(sender);
                                     //NCLWEngine.getIns().getExec().submit(sender);
                                     sendThread.start();
+
+                                    */
                                     sender.getDataQueue().add(data);
                                     System.out.println("outFile Sent : task" + this.vnf.getIDVector().get(1) + "@" + this.vnf.getvCPUID() + "->@delegator");
                                     break;
@@ -754,10 +774,14 @@ System.out.println("Exec RESULT:"+retBuf.toString());
 
                                     }
 
-                                    SendThread sender = new SendThread();
+                                    SendThread sender = this.processSend();
+
+                                   /* SendThread sender = new SendThread();
                                     Thread sendThread = new Thread(sender);
                                     //NCLWEngine.getIns().getExec().submit(sender);
                                     sendThread.start();
+
+                                    */
                                     sender.getDataQueue().add(data);
                                     System.out.println("outFile Sent : task" + this.vnf.getIDVector().get(1) + "@" + this.vnf.getvCPUID() + "->" + "task" + targetID + "@" + sucVCPUID);
 
@@ -793,9 +817,14 @@ System.out.println("Exec RESULT:"+retBuf.toString());
                                 data.setEnv(this.env);
                                 data.setMsg(msg);
                                 data.setFile(false);
-                                SendThread sender = new SendThread();
-                                Thread sendThread = new Thread(sender);
-                                sendThread.start();
+                                SendThread sender = this.processSend();
+
+                                   /* SendThread sender = new SendThread();
+                                    Thread sendThread = new Thread(sender);
+                                    //NCLWEngine.getIns().getExec().submit(sender);
+                                    sendThread.start();
+
+                                    */
                                 sender.getDataQueue().add(data);
                                 System.out.println("outMSG Sent : task" + this.vnf.getIDVector().get(1) + "@" + this.vnf.getvCPUID() + "->" + "task" + targetTaskID + "@" + sucVCPUID);
 
@@ -990,4 +1019,6 @@ System.out.println("Exec RESULT:"+retBuf.toString());
     public void setDocker_image(String docker_image) {
         this.docker_image = docker_image;
     }
+
+
 }
