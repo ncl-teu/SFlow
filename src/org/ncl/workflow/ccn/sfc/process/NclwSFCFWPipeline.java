@@ -69,6 +69,9 @@ import java.util.concurrent.ScheduledExecutorService;
         }
 
  */
+        System.out.println("****INCOMMINGINTEREST:"+"Local:"+inFace.getLocalUri().getInet().getHostAddress() + "/Remote:"+inFace.getRemoteUri().getInet().getHostAddress());
+
+
         NCLWData data = NclwNFDMgr.getIns().fetchNCLWData(interest);
         SFC sfc = data.getSfc();
         NFVEnvironment env = data.getEnv();
@@ -86,8 +89,15 @@ import java.util.concurrent.ScheduledExecutorService;
         }
 
         // PIT insert
+
         PitEntry pitEntry = pit.insert(interest).getFirst();
-        //pitEntry.insertOrUpdateInRecord()
+        System.out.println("****PIT ADD:"+pitEntry.getName());
+        Iterator<PitInRecord> pIte = pitEntry.getInRecords().iterator();
+        while(pIte.hasNext()){
+            PitInRecord p = pIte.next();
+            System.out.println("       ***Remote:"+p.getFace().getRemoteUri().getInet().getHostAddress() + "/Local:"+p.getFace().getLocalUri().getInet().getHostAddress());
+        }
+       // pitEntry.insertOrUpdateInRecord(inFace, interest);
 
         if(toVNF != null){
             VM predHost = NCLWUtil.findVM(env, predVNF.getvCPUID());
@@ -172,6 +182,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
         // scope control
         if (pitEntry.violatesScope(outFace)) {
+
             return;
         }
 
@@ -180,6 +191,7 @@ import java.util.concurrent.ScheduledExecutorService;
         List<PitInRecord> inRecords = pitEntry.getInRecords();
         if (inRecords == null || inRecords.isEmpty()) {
             return;
+
         }
         long smallestLastRenewed = Long.MAX_VALUE;
         boolean smallestIsOutFace = true;
@@ -203,6 +215,7 @@ import java.util.concurrent.ScheduledExecutorService;
         }
         if (pickedInRecord == null) {
             return;
+
         }
         Interest interest = pickedInRecord.getInterest();
 
@@ -227,6 +240,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
         // insert OutRecord
         pitEntry.insertOrUpdateOutRecord(outFace, interest);
+        System.out.println("**InterestGO: TOTask:"+data.getFromTaskID() + "@"+data.getIpAddr()+"/LocalURI:"+outFace.getLocalUri()+"/RemoteURI:"+outFace.getRemoteUri());
 
         outFace.sendInterest(newInterest);
 
@@ -305,6 +319,7 @@ System.out.println("***Data COME!!****");
      * もしあれば，そのpitエントリ全部に対して結果を送る．
      *
      * nDataには，宛先タスクID, 宛先ホストIPが必要．
+     * ipAddrは，宛先タスクが割り当てられたホストのIP
      *
      * @param nData
      */
@@ -389,8 +404,6 @@ System.out.println("**PIT OK Match!!**");
         // foreach PitEntry
         for (List<PitEntry> oneList : pitMatches) {
 
-            //logger.log(Level.INFO, "{0} Pit entry(ies) found in the list for {1}",
-            //new Object[]{oneList.size(), data.getName().toUri()});
             for (PitEntry onePitEntry : oneList) {
                 System.out.println("***Pit Matched to :"+onePitEntry.getName().toUri());
                 // cancel unsatisfy & straggler timer
@@ -456,6 +469,7 @@ System.out.println("**PIT OK Match!!**");
         }
 
         for (Face one : pendingDownstreams) {
+            System.out.println(one.getRemoteUri());
             // goto outgoing Data pipeline
            this.onOutgoingData(data, one);
 
@@ -487,6 +501,14 @@ System.out.println("**PIT OK Match!!**");
         @Override
         public void onContentStoreHit(Interest interest, Data data) {
             super.onContentStoreHit(interest, data);
+        }
+
+        public PitEntry getPitEntry() {
+            return pitEntry;
+        }
+
+        public void setPitEntry(PitEntry pitEntry) {
+            this.pitEntry = pitEntry;
         }
 
         /**
@@ -563,15 +585,19 @@ System.out.println("**PIT OK Match!!**");
     public void processOutData(Data inData, TcpFace face){
 
         NCLWData data = NclwNFDMgr.getIns().fetchNCLWData(inData);
+        //PITのIPアドレスを設定する．
+        data.setPitIPAddr(face.getRemoteUri().getInet().getHostAddress());
         boolean isFile = data.isFile();
         String readPath = data.getReadFilePath();
         String ipAddr;
+        //今度はチェック
         if(data.getToTaskID() == -1){
             ipAddr = NCLWUtil.delegator_ip;
         }else{
              ipAddr = face.getRemoteUri().getInet().getHostAddress();
 
         }
+
         int port = NCLWUtil.port;
 
         NFVEnvironment env = data.getEnv();

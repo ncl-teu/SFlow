@@ -1,6 +1,7 @@
 package org.ncl.workflow.ccn.sfc.process;
 
 import net.gripps.cloud.nfv.sfc.SFC;
+import org.ncl.workflow.ccn.core.NclwNFDMgr;
 import org.ncl.workflow.comm.NCLWData;
 import org.ncl.workflow.comm.RecvThread;
 import org.ncl.workflow.comm.WorkflowJob;
@@ -63,86 +64,25 @@ public class NclwNFDRecvThread extends RecvThread {
             SFC sfc = data.getSfc();
             NFDTask task;
 
-            if(data.getToTaskID() == -1){
-                if(data.isFile()){
-                    File file = data.getFile();
-                    String path = file.getPath();
-                    String dir = file.getParent();
-                    if(!(dir == null)){
-                        File dir2 = new File(file.getParent());
-                        if(!dir2.exists()){
-                            dir2.mkdirs();
+            //まず，pitIpAddr = 自分であれば色々処理する．
+            //そうでなければ，pitIpAddrにセットして送る．
+            if(data.getPitIPAddr().equals(NclwNFDMgr.getIns().getOwnIPAddr())){
+                if(data.getToTaskID() == -1){
+                    if(data.isFile()){
+                        File file = data.getFile();
+                        String path = file.getPath();
+                        String dir = file.getParent();
+                        if(!(dir == null)){
+                            File dir2 = new File(file.getParent());
+                            if(!dir2.exists()){
+                                dir2.mkdirs();
+                            }
                         }
-                    }
 
-                    // String outPath = "/"+file.getParent()+ "/"+file.getName();
-                    //FileInputStream fis = new FileInputStream(file);
-                    ByteArrayInputStream bis = new ByteArrayInputStream(data.getBytes());
-                    //FileInputStream fis = data.getFis();
-                    FileOutputStream fos = new FileOutputStream(data.getWriteFilePath());
-                    int fileLength;
-                    while ((fileLength = bis.read(buffer)) > 0) {
-                        //while ((fileLength = fis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, fileLength);
-                    }
-                    fos.flush();
-                    fos.close();
-                    //  fis.close();
-                    bis.close();
-                    out.flush();
-                    out.close();
-                    in.close();
-                    System.out.println("Obtained File:"+file.getPath());
-                }
-                System.out.println("Obtained Msg:"+data.getMsg());
-                ProcessMgr.getIns().setFinishTime(System.currentTimeMillis());
-                System.out.println("Elappsed time:"+ NCLWUtil.getRoundedValue((ProcessMgr.getIns().getFinishTime() - ProcessMgr.getIns().getStartTime())/(double)1000) + "(sec)");
-                System.exit(0);
-
-            }
-            String prefix = job.getJobID()+"^"+data.getToTaskID();
-            HashMap<String, NFDTask> taskPool = NFDTaskEngine.getIns().getTaskPool();
-            if(taskPool.containsKey(prefix)){
-                task = NFDTaskEngine.getIns().getTaskPool().get(prefix);
-            }else{
-                task = job.getNfdTaskMap().get(data.getToTaskID());
-                NFDTaskEngine.getIns().getTaskPool().put(prefix, task);
-            }
-
-
-            System.out.println("Data arrived:"+data.getFromTaskID() + "->"+data.getToTaskID());
-
-            Thread taskThread = new Thread(task);
-            task.setVnf(sfc.findVNFByLastID(data.getToTaskID()));
-            task.setJobID(job.getJobID());
-            task.setJob(job);
-            task.setSfc(sfc);
-            task.setEnv(data.getEnv());
-
-
-            //The case that from Delegator due to backtracking
-            if(data.getFromTaskID() == -1){
-
-
-            }else{
-                if(data.isFile()){
-
-                    File file = data.getFile();
-                    String path = file.getPath();
-                    String dir = file.getParent();
-                    if(!(dir == null)){
-                        File dir2 = new File(file.getParent());
-                        if(!dir2.exists()){
-                            dir2.mkdirs();
-                        }
-                    }
-
-                    // String outPath = "/"+file.getParent()+ "/"+file.getName();
-                    //FileInputStream fis = new FileInputStream(file);
-                    ByteArrayInputStream bis = new ByteArrayInputStream(data.getBytes());
-                    //FileInputStream fis = data.getFis();
-                    if(file.exists()){
-                    }else{
+                        // String outPath = "/"+file.getParent()+ "/"+file.getName();
+                        //FileInputStream fis = new FileInputStream(file);
+                        ByteArrayInputStream bis = new ByteArrayInputStream(data.getBytes());
+                        //FileInputStream fis = data.getFis();
                         FileOutputStream fos = new FileOutputStream(data.getWriteFilePath());
                         int fileLength;
                         while ((fileLength = bis.read(buffer)) > 0) {
@@ -151,15 +91,79 @@ public class NclwNFDRecvThread extends RecvThread {
                         }
                         fos.flush();
                         fos.close();
+                        //  fis.close();
+                        bis.close();
+                        out.flush();
+                        out.close();
+                        in.close();
+                        System.out.println("Obtained File:"+file.getPath());
                     }
+                    System.out.println("Obtained Msg:"+data.getMsg());
+                    ProcessMgr.getIns().setFinishTime(System.currentTimeMillis());
+                    System.out.println("Elappsed time:"+ NCLWUtil.getRoundedValue((ProcessMgr.getIns().getFinishTime() - ProcessMgr.getIns().getStartTime())/(double)1000) + "(sec)");
+                    System.exit(0);
+
+                }
+                String prefix = job.getJobID()+"^"+data.getToTaskID();
+                HashMap<String, NFDTask> taskPool = NFDTaskEngine.getIns().getTaskPool();
+                if(taskPool.containsKey(prefix)){
+                    task = NFDTaskEngine.getIns().getTaskPool().get(prefix);
+                }else{
+                    task = job.getNfdTaskMap().get(data.getToTaskID());
+                    NFDTaskEngine.getIns().getTaskPool().put(prefix, task);
+                }
 
 
-                    //  fis.close();
-                    bis.close();
-                    out.flush();
-                    out.close();
-                    in.close();
-                    System.out.println("Obtained File:"+file.getPath());
+                System.out.println("Data arrived:"+data.getFromTaskID() + "->"+data.getToTaskID());
+
+                Thread taskThread = new Thread(task);
+                task.setVnf(sfc.findVNFByLastID(data.getToTaskID()));
+                task.setJobID(job.getJobID());
+                task.setJob(job);
+                task.setSfc(sfc);
+                task.setEnv(data.getEnv());
+
+
+                //The case that from Delegator due to backtracking
+                if(data.getFromTaskID() == -1){
+
+
+                }else{
+                    if(data.isFile()){
+
+                        File file = data.getFile();
+                        String path = file.getPath();
+                        String dir = file.getParent();
+                        if(!(dir == null)){
+                            File dir2 = new File(file.getParent());
+                            if(!dir2.exists()){
+                                dir2.mkdirs();
+                            }
+                        }
+
+                        // String outPath = "/"+file.getParent()+ "/"+file.getName();
+                        //FileInputStream fis = new FileInputStream(file);
+                        ByteArrayInputStream bis = new ByteArrayInputStream(data.getBytes());
+                        //FileInputStream fis = data.getFis();
+                        if(file.exists()){
+                        }else{
+                            FileOutputStream fos = new FileOutputStream(data.getWriteFilePath());
+                            int fileLength;
+                            while ((fileLength = bis.read(buffer)) > 0) {
+                                //while ((fileLength = fis.read(buffer)) > 0) {
+                                fos.write(buffer, 0, fileLength);
+                            }
+                            fos.flush();
+                            fos.close();
+                        }
+
+
+                        //  fis.close();
+                        bis.close();
+                        out.flush();
+                        out.close();
+                        in.close();
+                        System.out.println("Obtained File:"+file.getPath());
 
 
                     /*
@@ -175,28 +179,32 @@ public class NclwNFDRecvThread extends RecvThread {
                     fis.close();
 
                      */
+                    }
+                    task.getInDataMap().put(data.getFromTaskID(), data);
+                    //   int currentCnt = task.getArrivedCnt();
+                    // task.setArrivedCnt(currentCnt+1);
+                    //System.out.println("TaskID:"+task.getTaskID() + "CNT:"+task.getArrivedCnt());
+
                 }
-                task.getInDataMap().put(data.getFromTaskID(), data);
-                //   int currentCnt = task.getArrivedCnt();
-                // task.setArrivedCnt(currentCnt+1);
-                //System.out.println("TaskID:"+task.getTaskID() + "CNT:"+task.getArrivedCnt());
 
+                if(!task.isStarted()){
+                    taskThread.start();
+
+                }
+
+
+
+                out.flush();
+                out.close();
+                in.close();
+                //listen_socket.close();
+                this.client.close();
+                this.endFlg = true;
+            }else{
+                //Pitに対して送信する準備
+                //自身のPitから取り出して更新する．
+                NclwNFDMgr.getIns().getPipeline().processSendData(data);
             }
-
-            if(!task.isStarted()){
-                taskThread.start();
-
-            }
-
-
-
-            out.flush();
-            out.close();
-            in.close();
-            //listen_socket.close();
-            this.client.close();
-            this.endFlg = true;
-
 
         } catch (Exception e) {
             e.printStackTrace();

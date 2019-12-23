@@ -1,5 +1,7 @@
 package org.ncl.workflow.ccn.sfc.main;
 
+import com.intel.jndn.forwarder.Forwarder;
+import com.intel.jnfd.deamon.face.tcp.TcpFace;
 import net.gripps.cloud.core.VCPU;
 import net.gripps.cloud.core.VM;
 import net.gripps.cloud.nfv.NFVEnvironment;
@@ -12,7 +14,10 @@ import net.gripps.cloud.nfv.optimization.CoordVNFAlgorithm;
 import net.gripps.cloud.nfv.sfc.SFC;
 import net.gripps.cloud.nfv.sfc.VNF;
 import org.ncl.workflow.ccn.core.NclwNFDMgr;
+import org.ncl.workflow.ccn.sfc.process.NFDTask;
+import org.ncl.workflow.ccn.sfc.process.NclwNFD;
 import org.ncl.workflow.ccn.sfc.process.NclwNFDSendThread;
+import org.ncl.workflow.ccn.util.Setup;
 import org.ncl.workflow.comm.NCLWData;
 import org.ncl.workflow.comm.RecvThread;
 import org.ncl.workflow.comm.SendThread;
@@ -41,6 +46,8 @@ public class NclwNFDelegator {
         String envJsonFile = args[0];
         String jobJsonFile = args[1];
         String prop = args[2];
+        String hostFile = args[3];
+
         if(envJsonFile.isEmpty() || jobJsonFile.isEmpty()||prop.isEmpty()){
             System.out.println("Please input env. json file, job json file, and property file.");
             System.exit(-1);
@@ -116,9 +123,11 @@ public class NclwNFDelegator {
         }
 
 
+        NclwNFD nfd = new NclwNFD();
+        nfd.process(0,prop, hostFile );
+
         //-> END VNFがわらいてられているノードに対してInterestパケットを送る．
         Iterator<Long> endIte = sfc.getEndVNFSet().iterator();
-
         ProcessMgr.getIns().setStartTime(System.currentTimeMillis());
         NclwNFDSendThread sender = new NclwNFDSendThread();
         Thread sendThread = new Thread(sender);
@@ -132,10 +141,12 @@ public class NclwNFDelegator {
             VCPU vcpu = env.getGlobal_vcpuMap().get(endVNF.getvCPUID());
 
             VM host = NCLWUtil.findVM(env, vcpu.getPrefix());
-            Task endTask = job.getNfdTaskMap().get(endID);
+            NFDTask endTask = job.getNfdTaskMap().get(endID);
             //readFilePath: 送るファイルのpath, //相手側で受信後，入力ファイル生成path
             NCLWData data = new NCLWData(endID, -1, host.getIpAddr(), NCLWUtil.NFD_PORT, sfc, env, job);
             data.setFile(false);
+            TcpFace toFace = NclwNFDMgr.getIns().createFace(host.getIpAddr(), NclwNFDMgr.getIns().getOwnIPAddr());
+            NclwNFDMgr.getIns().getFib().insert(NclwNFDMgr.getIns().createPrefix(endTask, null), toFace, 1);
             //当該データを，startタスクのノードへ送る．
             sender.getInterestDataQueue().add(data);
             //sender.getInterestDataQueue().add(data);

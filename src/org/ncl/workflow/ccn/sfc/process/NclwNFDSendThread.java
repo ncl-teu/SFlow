@@ -1,14 +1,21 @@
 package org.ncl.workflow.ccn.sfc.process;
 
+import com.intel.jnfd.deamon.face.tcp.TcpFace;
+import com.intel.jnfd.deamon.fw.RetxSuppression;
+import com.intel.jnfd.deamon.table.fib.FibEntry;
+import com.intel.jnfd.deamon.table.fib.FibNextHop;
+import com.intel.jnfd.deamon.table.pit.PitEntry;
 import net.gripps.cloud.core.VCPU;
 import net.gripps.cloud.core.VM;
 import net.gripps.cloud.nfv.NFVEnvironment;
 import net.gripps.cloud.nfv.sfc.SFC;
 import net.gripps.cloud.nfv.sfc.VNF;
+import net.gripps.clustering.common.aplmodel.DataDependence;
 import net.named_data.jndn.*;
 import net.named_data.jndn.util.Blob;
 import org.ncl.workflow.ccn.core.NclwNFDMgr;
 import org.ncl.workflow.ccn.core.NclwNameInfo;
+import org.ncl.workflow.ccn.util.NetInfo;
 import org.ncl.workflow.comm.NCLWData;
 import org.ncl.workflow.comm.SendThread;
 import org.ncl.workflow.comm.WorkflowJob;
@@ -16,8 +23,12 @@ import org.ncl.workflow.engine.Task;
 import org.ncl.workflow.util.NCLWUtil;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -99,6 +110,8 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
 
     /**
      * Inerestパケット送信用処理
+     * Delegatorのみから呼ばれる．
+     * それ以外のルータからは，PipelineのOnOutgoingInterestが呼ばれる．
      * @param data
      */
     public void sendInterestProcess(NCLWData data) {
@@ -120,6 +133,9 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
             VM host = NCLWUtil.findVM(data.getEnv(), pitVcpu.getPrefix());
             data.setPitIPAddr(host.getIpAddr());
 
+        }else{
+            //delegatorからのものであれば，pitをelegatorに設定
+            data.setPitIPAddr(NCLWUtil.delegator_ip);
         }
 
 
@@ -157,11 +173,18 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
             //PipelineのonContentStoreHitやonIncomingDataメソッドをcall
             //してdataを送る．
             //Interestパケット送信
-           face.expressInterest(interest, this);
+           //face.expressInterest(interest, this);
+            this.processInterest(interest);
 
+           /* VNF predVNF = sfc.findVNFByLastID(data.getFromTaskID());
+            VM host = NCLWUtil.findVM(env, predVNF.getvCPUID());
 
+            TcpFace oFace = NclwNFDMgr.getIns().createFace(host.getIpAddr(), NclwNFDMgr.getIns().getOwnIPAddr());
+            NclwNFDMgr.getIns().getPipeline().onOutgoingInterest( (NFDTask)task, (NFDTask)toTask, data, pitEntry, oFace, false);
+*/
+/*
             while (true) {
-                face.processEvents();
+                //face.processEvents();
                 if(this.finishFlag){
                     break;
                 }
@@ -171,10 +194,45 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
                     e.printStackTrace();
                 }
             }
-
+*/
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void processInterest(Interest interest){
+        if(interest.getName().toUri().startsWith(NCLWUtil.NCLW_PREFIX)){
+            NCLWData sfcData = NclwNFDMgr.getIns().fetchNCLWData(interest);
+            WorkflowJob job = sfcData.getJob();
+            NFDTask predTask = job.getNfdTaskMap().get(sfcData.getFromTaskID());
+
+            String targetIP = sfcData.getIpAddr();
+            FibEntry fibE = NclwNFDMgr.getIns().getFib().findExactMatch(interest.getName());
+            List<FibNextHop> nList  = fibE.getNextHopList();
+            Iterator<FibNextHop> fIte = nList.iterator();
+            long minCost = 10000000;
+            TcpFace oFace = null;
+            //Fibエントリのfaceのうち最低コストのFaceを決めるためのループ
+            while(fIte.hasNext()){
+                FibNextHop nextHop = fIte.next();
+                long cost = nextHop.getCost();
+                if(cost <= minCost){
+                    minCost = cost;
+                    oFace = (TcpFace)nextHop.getFace();
+                }
+            }
+
+            PitEntry pitEntry = NclwNFDMgr.getIns().getPit().insert(interest).getFirst();
+            pitEntry.insertOrUpdateInRecord(oFace, interest);
+
+
+
+            NclwNFDMgr.getIns().getPipeline().onOutgoingInterest( (NFDTask)predTask, (NFDTask)null, sfcData, pitEntry, oFace, false);
+
+        }
+
+
+
     }
 
     /**
@@ -245,6 +303,7 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
                 System.out.println("**PREFIX:"+data.getJob().getJobID() + "^" + data.getToTaskID());
 
                 //もしpred/toが同一ホストに割り当てられているなら，Interestは送信せずにカウンタのみを+するだけ．
+                //この時点で，自分が対象ホストであることが保証されている．
                 if (predHost.getIpAddr().equals(toHost.getIpAddr())) {
                     WorkflowJob job = data.getJob();
                     String prefix = job.getJobID() + "^" + data.getToTaskID();
@@ -268,7 +327,6 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
                         taskThread.start();
 
                     }
-                    System.out.println("****269***");
                     //結果を入力へ入れる．
                     task.getInDataMap().put(predVNF.getIDVector().get(1), data);
                     return;

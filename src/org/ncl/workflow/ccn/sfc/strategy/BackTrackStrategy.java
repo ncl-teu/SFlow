@@ -285,6 +285,7 @@ System.out.println("AddrNum:"+adrs.length);
                         NFDTask  predTask = data.getJob().getNfdTaskMap().get(dpred.getFromID().get(1));
                         NFDTask toTask = data.getJob().getNfdTaskMap().get(task.getTaskID());
                         if(host.getIpAddr().equals(toHost.getIpAddr())){
+                            System.out.println("***288FACE Structure::"+"Remote:"+host.getIpAddr() + "/Local:"+toHost.getIpAddr());
 
                             //疑似Interestを作成．
                             Interest predInterest = new Interest();
@@ -306,12 +307,15 @@ System.out.println("AddrNum:"+adrs.length);
                             if(fibE == null){
                                 //System.out.println("**NEW FACE!!**");
                                 oFace = NclwNFDMgr.getIns().createFace(host.getIpAddr(), toHost.getIpAddr());
+                                System.out.println("***FACE Structure::"+"Remote:"+host.getIpAddr() + "/Local:"+toHost.getIpAddr());
                                 //NclwNFDMgr.getIns().getFib().insert(interest.getName(), oFace, 1);
                             }else{
-                                // System.out.println("**FACE XXX!!**");
+                                 System.out.println("**FACE XXX!!**");
 
                                 //FIBにあれば，そのfaceの宛先にinterestを送る．
                                 List<FibNextHop> nList  = fibE.getNextHopList();
+                                //System.out.println("****FIB SIZE: "+ nList.size());
+
                                 Iterator<FibNextHop> fIte = nList.iterator();
                                 long minCost = 10000000;
                                 //Fibエントリのfaceのうち最低コストのFaceを決めるためのループ
@@ -336,10 +340,8 @@ System.out.println("AddrNum:"+adrs.length);
                             //TcpFace側でInterestを送信する．
                             //そして，Data到着は，Pipeline->onIncomingDataで呼ばれる．
                             //sendInterest(pitEntry, oFace, false);
-                            System.out.println("**InterestGO: TOTask:"+data.getFromTaskID() + "@"+data.getIpAddr()+"/LocalURI:"+oFace.getLocalUri()+"/RemoteURI:"+oFace.getRemoteUri());
 
                             NclwNFDMgr.getIns().getPipeline().onOutgoingInterest( (NFDTask)predTask, (NFDTask)task, data, pitEntry, oFace, false);
-
                         }
 
                     }

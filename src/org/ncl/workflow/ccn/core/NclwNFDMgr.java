@@ -159,6 +159,9 @@ public class NclwNFDMgr {
                     this.ipMap.put(ip_addr,ip_addr);
 
             }
+            //Delegatorも追加する．
+            this.ipMap.put(NCLWUtil.delegator_ip, NCLWUtil.delegator_ip);
+
             //自身のIPを確定させる．
             this.getOwnIPAddr();
             Iterator<String> ipIte = ipMap.values().iterator();
@@ -197,7 +200,7 @@ public class NclwNFDMgr {
         return data;
     }
 
-    public void getOwnIPAddr(){
+    public String  getOwnIPAddr(){
         try{
             InetAddress  addr = InetAddress.getLocalHost();
             String hostName = addr.getHostName();
@@ -210,10 +213,12 @@ public class NclwNFDMgr {
                     this.ownIP = ip;
                     break;
                 }
+
             }
         }catch(Exception e){
             e.printStackTrace();
         }
+        return this.ownIP;
 
     }
 
@@ -279,8 +284,7 @@ public class NclwNFDMgr {
             AsynchronousSocketChannel asynchronousSocket
                     = AsynchronousSocketChannel.open(asynchronousChannelGroup);
             asynchronousSocket.connect(new InetSocketAddress(remoteAddress, NCLWUtil.NFD_PORT));
-
-            FaceUri localFaceUri = new FaceUri("tcp4://0.0.0.0"); // or new FaceUri("tcp6://[::]:6363")};
+            FaceUri localFaceUri = new FaceUri("tcp4://"+this.getOwnIPAddr()); // or new FaceUri("tcp6://[::]:6363")};
 
             /*if(this.isLocalHost(remoteAddress)){
                remoteAddress = "127.0.0.1";
