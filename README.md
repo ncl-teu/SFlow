@@ -1,4 +1,4 @@
-# ncl_workflow-engine(NCLW)
+# ncl_workflow-engine(SFlow)
 ## Introduction
 Distributed workflow engine for workflow scheduling and service function chaining **(SFC)** for a real environment.
 One function corresponds to one linux commnad or a Docker container.
