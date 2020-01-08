@@ -22,6 +22,8 @@
     <property name="dir_sfc" location="${dist}/sfc"/>
     <property name="dir_mobileedgecomp" location="${dist}/mobileedgecomp"/>
     <property name="dir_nclw" location="${dist}/nclw"/>
+    <property name="dir_nclwh" location="${dist}/nclwh"/>
+    <property name="dir_nfd" location="${dist}/nfd"/>
 
 
 
@@ -52,6 +54,7 @@
       <mkdir dir="${dir_mapreduce}" />
       <mkdir dir="${dir_mobileedgecomp}" />
       <mkdir dir="${dir_nclw}" />
+      <mkdir dir="${dir_nclwh}" />
       <mkdir dir="${dir_sfc}" />
 
 
@@ -93,6 +96,12 @@
         <classpath path="${lib}/ganymed-ssh2-build210.jar" />
         <classpath path="${lib}/jsch-0.1.55.jar" />
 
+        <classpath path="${lib}/jndn.jar" />
+        <classpath path="${lib}/sqlite-jdbc-3.23.1.jar" />
+        <classpath path="${lib}/protobuf-java-2.6.1.jar" />
+        <classpath path="${lib}/jndn-management-master-1.2.2.jar" />
+        <classpath path="${lib}/jndn-forwarder.jar" />
+        <classpath path="${lib}/jndn-utils.jar" />
 
 
 
@@ -142,8 +151,11 @@
         <copy file="nclw_nfvrun.bat" todir="${dir_sfc}"/>
     </target>
 
+
+
     <target name="dist_workflow" depends="build">
         <jar jarfile="${lib}/ncl-sfcworkflow.jar" basedir="${build}"  includes="org/**"/>
+        <jar jarfile="${lib}/jndn-forwarder-ncl.jar" basedir="${build}"  includes="com/**,main/**"/>
         <mkdir dir="${dir_nclw}" />
         <mkdir dir="${dir_nclw}/lib/"/>
         <mkdir dir="${dir_nclw}/nclw/"/>
@@ -162,21 +174,56 @@
         <copy file="${lib}/log4j-api-2.11.1.jar" todir="${dir_nclw}/lib/"/>
         <copy file="${lib}/log4j-core-2.11.1.jar" todir="${dir_nclw}/lib/"/>
         <copy file="nclw/job_ncl.json" todir="${dir_nclw}/nclw"/>
+        <copy file="nclw/env.json" todir="${dir_nclw}/nclw"/>
         <copy file="nclw/env_ncl.json" todir="${dir_nclw}/nclw"/>
-
+        <copy file="nclw/env_ncl1.json" todir="${dir_nclw}/nclw"/>
+        <copy file="nclw/job_ffmpeg.json" todir="${dir_nclw}/nclw"/>
         <copy file="nclw2.properties" todir="${dir_nclw}"/>
+        <copy file="nclwccn.properties" todir="${dir_nclw}"/>
         <copy file="nclw_worker.sh" todir="${dir_nclw}"/>
         <copy file="nclw_delegator.sh" todir="${dir_nclw}"/>
+        <copy file="ffmpeg_delegator.sh" todir="${dir_nclw}"/>
         <copy file="nclw_worker.bat" todir="${dir_nclw}"/>
         <copy file="nclw_delegator.bat" todir="${dir_nclw}"/>
         <copy file="nclw_moduleup.sh" todir="${dir_nclw}"/>
         <copy file="nclw_startworker.sh" todir="${dir_nclw}"/>
         <copy file="nclw_stopworker.sh" todir="${dir_nclw}"/>
+        <copy file="ccn_consumer.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_nfd.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_nfdelegator.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_nfdstartworker.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_nfdcollectlog.sh" todir="${dir_nclw}"/>
         <copy file="nclw_hosts" todir="${dir_nclw}"/>
         <copy file="${lib}/jsch-0.1.55.jar" todir="${dir_nclw}/lib/"/>
-
+        <copy file="${lib}/jndn.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/sqlite-jdbc-3.23.1.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/protobuf-java-2.6.1.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jndn-management-master-1.2.2.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jndn-forwarder-ncl.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jndn-utils.jar" todir="${dir_nclw}/lib/"/>
 
     </target>
+
+    <target name="dist_nfd" depends="build">
+        <jar jarfile="${lib}/ncl-nfd.jar" basedir="${build}"  includes="org/ncl/workflow/ccn/**" excludes="org/ncl/workflow/ccn/sfc/**"/>
+        <jar jarfile="${lib}/jndn-forwarder-ncl.jar" basedir="${build}"  includes="com/**,main/**"/>
+        <mkdir dir="${dir_nfd}" />
+        <mkdir dir="${dir_nfd}/lib/"/>
+        <copy file="nfd_consumer.sh" todir="${dir_nfd}"/>
+        <copy file="nfd_consumer.bat" todir="${dir_nfd}"/>
+        <copy file="nfd.bat" todir="${dir_nfd}"/>
+        <copy file="nfd.sh" todir="${dir_nfd}"/>
+        <copy file="${lib}/jndn.jar" todir="${dir_nfd}/lib/"/>
+        <copy file="${lib}/sqlite-jdbc-3.23.1.jar" todir="${dir_nfd}/lib/"/>
+        <copy file="${lib}/protobuf-java-2.6.1.jar" todir="${dir_nfd}/lib/"/>
+        <copy file="${lib}/jndn-management-master-1.2.2.jar" todir="${dir_nfd}/lib/"/>
+        <copy file="${lib}/jndn-forwarder-ncl.jar" todir="${dir_nfd}/lib/"/>
+        <copy file="${lib}/jndn-utils.jar" todir="${dir_nfd}/lib/"/>
+        <copy file="${lib}/ncl-nfd.jar" todir="${dir_nfd}/lib/"/>
+
+    </target>
+
+
 
 
     <target name="dist_tasksched" depends="build">
