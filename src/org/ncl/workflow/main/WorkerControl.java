@@ -5,6 +5,12 @@ import org.ncl.workflow.util.HostInfo;
 import org.ncl.workflow.util.SshCommandExecute;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
@@ -56,6 +62,19 @@ public class WorkerControl {
              }
 
              Iterator<HostInfo> hostIte = hostList.listIterator();
+             String collectLog;
+             FileOutputStream fos = null;
+             if(args.length>3 &&(option.equals("collectlog"))){
+                  collectLog = args[3];
+                 fos = new FileOutputStream(new File(collectLog), false);
+
+
+             }
+
+
+             //BufferedWriter writer = Files.newBufferedWriter(path);
+
+
              while(hostIte.hasNext()){
                  HostInfo h = hostIte.next();
                  Connection conn = new Connection(h.getIpAddress());
@@ -71,7 +90,38 @@ public class WorkerControl {
                              sess.execCommand("cd " + h.getPath()+" && "+ shFile);
                          }
 
-                     }else{
+                     }else if(option.equals("collectlog")) {
+                         if(args.length>=4){
+                             String logFile = args[2];
+
+                             //Logの内容を取得する．
+                             sess.execCommand("cat " + h.getPath()+ logFile);
+                             InputStream is = sess.getStdout();
+                             //InputStreamReader ir = new InputStreamReader(is, "UTF-8");
+                             int data;
+                             int b = 0;
+
+                             byte [] buffer = new byte[1024];
+                             while(true) {
+                                 int len = is.read(buffer);
+
+                                 if(len < 0) {
+                                     break;
+                                 }
+                                 fos.write(buffer);
+
+                                 //bout.write(buffer, 0, len);
+                                // bout.writeTo(bos);
+
+
+
+                             }
+
+                             is.close();
+                         }
+
+
+                     }else {
                          sess.execCommand("pkill -KILL -f nclw");
 
                      }
@@ -83,6 +133,10 @@ public class WorkerControl {
                  }
 
              }
+             if(args.length>3 &&(option.equals("collectlog"))) {
+                 fos.close();
+             }
+
 
 
          }catch(Exception e){
