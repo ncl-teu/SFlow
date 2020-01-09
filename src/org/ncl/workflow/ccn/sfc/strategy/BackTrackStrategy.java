@@ -206,19 +206,7 @@ public class BackTrackStrategy extends BaseSFCStrategy {
                         break;
                     }
                 }
-                /*
-                InetAddress []adrs = InetAddress.getAllByName(hostName);
-System.out.println("AddrNum:"+adrs.length);
-                for(int i=0;i<adrs.length;i++){
- System.out.println("IP:"+adrs[i].getHostAddress());
 
-                    if(adrs[i].getHostAddress()==targetIP){
-                        isFound = true;
-                        break;
-                    }
-                }
-*/
-                //ownIP = addr.getHostAddress();
             }catch(Exception e){
                 e.printStackTrace();
             }

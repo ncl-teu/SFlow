@@ -313,6 +313,12 @@ System.out.println("***Data COME!!****");
 
     }
 
+    @Override
+    public void addFace(Face face) {
+        super.addFace(face);
+        NclwNFDMgr.getIns().addFIBEntryCallBack((TcpFace)face);
+    }
+
     /**
      * Task処理後に，Dataを送り出す処理です．
      * 当該タスクのprefixがPITにあるかどうかをチェックし，

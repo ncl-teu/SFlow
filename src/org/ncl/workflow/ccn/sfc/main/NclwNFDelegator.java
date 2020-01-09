@@ -10,6 +10,7 @@ import net.gripps.cloud.nfv.clustering.HierarchicalVNFClusteringAlgorithm;
 import net.gripps.cloud.nfv.clustering.SF_CUVAlgorithm;
 import net.gripps.cloud.nfv.listscheduling.FWS_VNFAlgorithm;
 import net.gripps.cloud.nfv.listscheduling.HEFT_VNFAlgorithm;
+import net.gripps.cloud.nfv.listscheduling.PEFT_VNFAlgorithm;
 import net.gripps.cloud.nfv.optimization.CoordVNFAlgorithm;
 import net.gripps.cloud.nfv.sfc.SFC;
 import net.gripps.cloud.nfv.sfc.VNF;
@@ -103,6 +104,13 @@ public class NclwNFDelegator {
                 System.out.println("SLR[HClustering]:"+ "makespan:"+NFVUtil.getRoundedValue(h.getMakeSpan()/*/sf_cuv.getTotalCPProcTimeAtMaxSpeed()*/) +" / # of vCPUs: "+h.getAssignedVCPUMap().size()+ "/ # of Hosts:"+h.getHostSet().size()
                         +"/# of Ins:"+h.calcTotalFunctionInstanceNum());
                 break;
+            case 5:
+                PEFT_VNFAlgorithm p = new PEFT_VNFAlgorithm(env, sfc);
+                p.mainProcess();
+                System.out.println("SLR[PEFT]:"+ "makespan:"+NFVUtil.getRoundedValue(p.getMakeSpan()/*/sf_cuv.getTotalCPProcTimeAtMaxSpeed()*/) +" / # of vCPUs: "+p.getAssignedVCPUMap().size()+ "/ # of Hosts:"+p.getHostSet().size()
+                        +"/# of Ins:"+p.calcTotalFunctionInstanceNum());
+                sfc = p.getSfc();
+                break;
             default:
                 SF_CUVAlgorithm sf_cuv2 = new SF_CUVAlgorithm(env, sfc);
 
@@ -122,7 +130,7 @@ public class NclwNFDelegator {
             System.out.println("VNF:"+vnf.getIDVector().get(1) + "@"+vnf.getvCPUID()+"@"+vm.getIpAddr());
         }
 
-
+        //NFDプロセスを起動させる．
         NclwNFD nfd = new NclwNFD();
         nfd.process(0,prop, hostFile );
 
@@ -149,7 +157,6 @@ public class NclwNFDelegator {
             NclwNFDMgr.getIns().getFib().insert(NclwNFDMgr.getIns().createPrefix(endTask, null), toFace, 1);
             //当該データを，startタスクのノードへ送る．
             sender.getInterestDataQueue().add(data);
-            //sender.getInterestDataQueue().add(data);
         }
 
     }

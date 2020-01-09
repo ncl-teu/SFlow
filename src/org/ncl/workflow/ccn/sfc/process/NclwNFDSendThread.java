@@ -122,8 +122,6 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
         int port = data.getPortNumber();
         NFVEnvironment env = data.getEnv();
 
-
-
         SFC sfc = data.getSfc();
         VNF srcVNF = sfc.findVNFByLastID(data.getFromTaskID());
         VNF toVNF = sfc.findVNFByLastID(data.getToTaskID());
@@ -137,7 +135,6 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
             //delegatorからのものであれば，pitをelegatorに設定
             data.setPitIPAddr(NCLWUtil.delegator_ip);
         }
-
 
         this.finishFlag = false;
         try {
@@ -155,7 +152,6 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
             Name name = NclwNFDMgr.getIns().createPrefix(task, toTask);
 
 
-            //data.getJob().getTaskMap().get(data.get)
 
            Face face = new Face(ipAddr);
             //com.intel.jndn.forwarder.api.Face face = NclwNFDMgr.getIns().createFace(ipAddr);
@@ -164,8 +160,6 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
             interest.setName(name);
             interest.setCanBePrefix(true);
 
-            //子供側のタスクIDをchildへ設定する．
-            //interest.setChildSelector((Integer.valueOf(toVNF.getIDVector().get(1).toString())).intValue());
             byte[] bs = null;
             bs = data.getAllBytes();
             interest.setApplicationParameters(new Blob(bs));
@@ -176,25 +170,6 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
            //face.expressInterest(interest, this);
             this.processInterest(interest);
 
-           /* VNF predVNF = sfc.findVNFByLastID(data.getFromTaskID());
-            VM host = NCLWUtil.findVM(env, predVNF.getvCPUID());
-
-            TcpFace oFace = NclwNFDMgr.getIns().createFace(host.getIpAddr(), NclwNFDMgr.getIns().getOwnIPAddr());
-            NclwNFDMgr.getIns().getPipeline().onOutgoingInterest( (NFDTask)task, (NFDTask)toTask, data, pitEntry, oFace, false);
-*/
-/*
-            while (true) {
-                //face.processEvents();
-                if(this.finishFlag){
-                    break;
-                }
-                try {
-                    Thread.sleep(10);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -224,8 +199,6 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
 
             PitEntry pitEntry = NclwNFDMgr.getIns().getPit().insert(interest).getFirst();
             pitEntry.insertOrUpdateInRecord(oFace, interest);
-
-
 
             NclwNFDMgr.getIns().getPipeline().onOutgoingInterest( (NFDTask)predTask, (NFDTask)null, sfcData, pitEntry, oFace, false);
 

@@ -25,7 +25,7 @@ public class Setup {
         cs.insert(data, true);
 
       */
-
+        System.out.println("**********IP: "+NclwNFDMgr.getIns().getOwnIPAddr() + " START****");
 
         try{
 

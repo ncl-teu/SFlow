@@ -114,6 +114,15 @@ public class NclwFaceManager implements Runnable, FaceManager {
         }
     }
 
+    public TcpFactory getPfactory() {
+        return pfactory;
+    }
+
+    public void setPfactory(TcpFactory pfactory) {
+        this.pfactory = pfactory;
+
+    }
+
     @Override
     public void run() {
         while(true){

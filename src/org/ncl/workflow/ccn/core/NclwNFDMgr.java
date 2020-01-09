@@ -5,6 +5,7 @@ import com.intel.jndn.forwarder.api.*;
 import com.intel.jnfd.deamon.face.FaceUri;
 import com.intel.jnfd.deamon.face.tcp.TcpChannel;
 import com.intel.jnfd.deamon.face.tcp.TcpFace;
+import com.intel.jnfd.deamon.face.tcp.TcpLocalFace;
 import com.intel.jnfd.deamon.fw.FaceTable;
 import com.intel.jnfd.deamon.fw.ForwardingPipeline;
 import net.named_data.jndn.Data;
@@ -168,10 +169,11 @@ public class NclwNFDMgr {
             while(ipIte.hasNext()){
                 String ip = ipIte.next();
                 //生成+FaceTableへ反映させる．
-                TcpFace face = this.createFace(ip, this.ownIP);
+               /// TcpFace face = this.createFace(ip, this.ownIP);
+                this.getMgr().getPfactory().createFace(new FaceUri("tcp4", ip, NCLWUtil.NFD_PORT));
 
                 //Fibにも追加しておく．
-                this.getFib().insert(new Name(NCLWUtil.NCLW_PREFIX), face, 1);
+               // this.getFib().insert(new Name(NCLWUtil.NCLW_PREFIX), face, 1);
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -179,6 +181,10 @@ public class NclwNFDMgr {
 
     }
 
+    public void addFIBEntryCallBack(TcpFace face){
+        this.getFib().insert(new Name(NCLWUtil.NCLW_PREFIX), face, 1);
+
+    }
     /**
      * Interestパケットのapplicationパラメータから，
      * NCLWDataへ変換します．
@@ -244,6 +250,14 @@ public class NclwNFDMgr {
         TcpFace face = this.channel.getFace(remoteAddress, NCLWUtil.NFD_PORT);
         if(face == null){
             face = this.createFace2(remoteAddress);
+          /*  try{
+                this.getMgr().getPfactory().createFace(new FaceUri("tcp4://"+remoteAddress + ":"+NCLWUtil.NFD_PORT));
+                face = this.channel.getFace(remoteAddress, NCLWUtil.NFD_PORT);
+
+
+            }catch(Exception e){
+                e.printStackTrace();
+            }*/
             InetSocketAddress remoteSocket = new InetSocketAddress(remoteAddress, NCLWUtil.NFD_PORT);
 
             this.channel.getFaceMap().put(remoteSocket, face);
@@ -278,7 +292,7 @@ public class NclwNFDMgr {
          TcpFace face = null;
        try{
 
-
+          // this.getMgr().getPfactory().createFace(new FaceUri("tcp4://"+remoteAddress + ":"+NCLWUtil.NFD_PORT));
             AsynchronousChannelGroup  asynchronousChannelGroup = AsynchronousChannelGroup.withThreadPool(this.mgr.getPool());
 
             AsynchronousSocketChannel asynchronousSocket
@@ -286,15 +300,29 @@ public class NclwNFDMgr {
             asynchronousSocket.connect(new InetSocketAddress(remoteAddress, NCLWUtil.NFD_PORT));
             FaceUri localFaceUri = new FaceUri("tcp4://"+this.getOwnIPAddr()); // or new FaceUri("tcp6://[::]:6363")};
 
-            /*if(this.isLocalHost(remoteAddress)){
-               remoteAddress = "127.0.0.1";
-            }
-
-             */
-
             face = new TcpFace(localFaceUri,
                     new FaceUri("tcp4://"+remoteAddress + ":"+NCLWUtil.NFD_PORT), asynchronousSocket
                     );
+      /*     InetSocketAddress localSocket = new InetSocketAddress(this.getOwnIPAddr(), NCLWUtil.NFD_PORT);
+           InetSocketAddress remoteSocket
+                   = new InetSocketAddress(remoteAddress, NCLWUtil.NFD_PORT);
+           face = new TcpLocalFace(new FaceUri("tcp", localSocket),
+                   new FaceUri("tcp", remoteSocket),
+                   asynchronousSocket, true, false,
+                   this.channel.getOnFaceDestroyedByPeer(),
+                   this.channel.getOnDataReceived(), this.channel.getOnInterestReceived());
+           onFaceCreated.onCompleted(face);
+           */
+/*
+
+
+           face = new TcpFace(new FaceUri("tcp", localSocket),
+                   new FaceUri("tcp", remoteSocket),
+                   asynchronousSocket, false, false,
+                   this.channel.getOnFaceDestroyedByPeer(),
+                   this.channel.getOnDataReceived(), this.channel.getOnInterestReceived());
+           this.channel.getOnFaceCreated().onCompleted(face);
+*/
             //当該faceを登録します．
             this.putFace(face);
 

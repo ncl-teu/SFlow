@@ -165,20 +165,6 @@ public class NclwNFDRecvThread extends RecvThread {
                         in.close();
                         System.out.println("Obtained File:"+file.getPath());
 
-
-                    /*
-                    File file = data.getFile();
-                    FileInputStream fis = new FileInputStream(file);
-                    FileOutputStream fos = new FileOutputStream(data.getWriteFilePath());
-                    int fileLength;
-                    while ((fileLength = fis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, fileLength);
-                    }
-                    fos.flush();
-                    fos.close();
-                    fis.close();
-
-                     */
                     }
                     task.getInDataMap().put(data.getFromTaskID(), data);
                     //   int currentCnt = task.getArrivedCnt();
