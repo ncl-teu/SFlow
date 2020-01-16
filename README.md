@@ -13,5 +13,6 @@ Though there are several workflow enginges to handle task allocation, this workf
 ### IP-based SFC
 #### 起動
 
-1. `./nclw_workder.sh`によってワーカー側プロセスを起動．これにより，データ受信待ちをする．
-
+1. Delegator側にて，`./nclw_startworkder.sh`によって**nclw_hosts**に記載されている全ワーカー側プロセスを起動．これにより，各ワーカーは，データ受信待ちをする．
+2. Delegator側にて，`./nclw_delegator.sh`によってスケジューリングを行い，ジョブ情報と環境情報をENDファンクション処理ノードへ送信される．そして，スケジュール通りに処理＋通信がなされる．
+3. ワーカープロセスを終了させる場合は，Delegator側にて，`./nclw_stopworker.sh`によって一斉終了させる．
