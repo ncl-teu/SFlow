@@ -37,7 +37,7 @@ public class NCLWUtil {
 
     public static String ftp_server_ip;
 
-    //public static String ftp_server_id;
+    public static String ftp_server_id;
 
     public static String ftp_server_pass;
 
@@ -118,7 +118,7 @@ public class NCLWUtil {
             NCLWUtil.port =Integer.valueOf( NCLWUtil.prop.getProperty("port_number"));
             NCLWUtil.delegator_ip =  NCLWUtil.prop.getProperty("delegator_ip");
             NCLWUtil.ftp_server_ip = NCLWUtil.prop.getProperty("ftp_server_ip");
-            //NCLWUtil.ftp_server_id = NCLWUtil.prop.getProperty("ftp_server_id");
+            NCLWUtil.ftp_server_id = NCLWUtil.prop.getProperty("ftp_server_id");
             NCLWUtil.ftp_server_pass = NCLWUtil.prop.getProperty("ftp_server_pass");
             NCLWUtil.ftp_server_homedirName = NCLWUtil.prop.getProperty("ftp_server_homedirName");
             NCLWUtil.docker_repository_home = NCLWUtil.prop.getProperty("docker_repository_home");
