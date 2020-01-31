@@ -33,7 +33,8 @@ input_file_transfer_protocol=ftp
 
 # FTPサーバのIPアドレスか，ホスト名を指定してください．
 ftp_server_ip=
-# ftp_server_ipと同じ値を指定してください．
+
+# FTPサーバへのログインID
 ftp_server_id=
 
 # FTPサーバへのログインパスワード
