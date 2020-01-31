@@ -1,4 +1,4 @@
-# SFLow: Workflow-engine for multiple communication schemes with scheduling algorithms. 
+# SFlow: Workflow-engine for multiple communication schemes with scheduling algorithms. 
 ## SFlowの概要
 - サービスファンクションのワークフロージョブにおいて，VM内の仮想CPU(vCPU)，または物理ホストの各コアに対して，各ファンクションのスケジューリングを行って割り当てます．つまりネットワーク上に分散した仮想／物理ホストに対してサービスファンクション配備するワークフローエンジンです．
   - スケジューリングアルゴリズムとしてはSF-CUV, HEFT, PEFT, FWS, CoordVNFを実装しており，設定ファイルにて選択できます．
