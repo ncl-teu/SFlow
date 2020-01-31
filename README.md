@@ -15,41 +15,47 @@
 ![system](https://user-images.githubusercontent.com/4952618/73509139-7a055200-4421-11ea-9108-245a240a87be.png)
 
 ## Delegator側の設定
-- nclw2.propertiesにおいて，
+- 設定ファイルは**nclw2.properties**で，下記のように設定します．
 ~~~
-# start port number.
-# actual port number = port_start +
-port_number=8088
+# IPベースによる通信ポート番号．例: 8088
+port_number=
+# DelegatorのIPアドレス．例: 192.168.1.17
+delegator_ip=
 
-delegator_ip=192.168.1.17
-
+# Delegatorで行うSFCのスケジューリングアルゴリズム．下記の番号を指定してください．
 # 0: SF-CUV 1: HEFT 2: FWS 3: CoordVNF 4: HClustering 5: PEFT
-sched_algorithm=0
+sched_algorithm=
 
-# "ftp" or "scp" can be chosen.
+# 実行に必要な入力ファイルの転送プロトコル．現状は"ftp"を指定してください．
 input_file_transfer_protocol=ftp
-# type the hostname or IP address of the ftp/scp server.
-ftp_server_ip=k32.starfree.jp
-#ftp_server_ip=192.168.1.217
 
-ftp_server_id=k32.starfree.jp
-#ftp_server_id=nclpwd
+# FTPサーバのIPアドレスか，ホスト名を指定してください．
+ftp_server_ip=
+# ftp_server_ipと同じ値を指定してください．
+ftp_server_id=
 
+# FTPサーバへのログインパスワード
+ftp_server_pass=
 
-ftp_server_pass=zq7uggns
-#ftp_server_pass=N3tC0EmQu
-# /home/user/...
+# FTPサーバの絶対パスのホームディレクトリ．最後は"/"をつけないでください．例: /home/test/workflow
 ftp_server_homedirName=nclw
-#ftp_server_homedirName=/home/ncl/gripps/input_repository
 
-docker_repository_ip=192.168.1.17
+# DockerリポジトリのIPアドレス．
+docker_repository_ip=
 
-# no "/" in both start/end.
-docker_repository_home=/home/kanemih/nclw_images
+# Dockerリポジトリのイメージファイルが格納されているパス．最後は"/"をつけないでください．例: /home/test/images
+docker_repository_home=
 
-docker_repository_userid=kanemih
-docker_repository_password=N3tC0EmQu
+# DockerリポジトリのSSHログインのユーザID
+docker_repository_userid=
 
+# DockerリポジトリのSSHログインのパスワード
+docker_repository_password=
+
+# ワーカのワーキングディレクトリにおいて，Dockerイメージファイル(.tar）を格納するディレクトリ
+# 例: ワーカのワーキングディレクトリ: /home/test/work/ で，docker_localdir=docker_tar とすると，Docker
+# リポジトリからSSH経由で取得したtarファイルは，
+# /home/test/work/docker_tar 以下に保存される．
 docker_localdir=docker_tar
 ~~~
 ## 使い方
