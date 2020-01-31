@@ -16,7 +16,42 @@
 
 ## Delegator側の設定
 - nclw2.propertiesにおいて，
+~~~
+# start port number.
+# actual port number = port_start +
+port_number=8088
 
+delegator_ip=192.168.1.17
+
+# 0: SF-CUV 1: HEFT 2: FWS 3: CoordVNF 4: HClustering 5: PEFT
+sched_algorithm=0
+
+# "ftp" or "scp" can be chosen.
+input_file_transfer_protocol=ftp
+# type the hostname or IP address of the ftp/scp server.
+ftp_server_ip=k32.starfree.jp
+#ftp_server_ip=192.168.1.217
+
+ftp_server_id=k32.starfree.jp
+#ftp_server_id=nclpwd
+
+
+ftp_server_pass=zq7uggns
+#ftp_server_pass=N3tC0EmQu
+# /home/user/...
+ftp_server_homedirName=nclw
+#ftp_server_homedirName=/home/ncl/gripps/input_repository
+
+docker_repository_ip=192.168.1.17
+
+# no "/" in both start/end.
+docker_repository_home=/home/kanemih/nclw_images
+
+docker_repository_userid=kanemih
+docker_repository_password=N3tC0EmQu
+
+docker_localdir=docker_tar
+~~~
 ## 使い方
 ### 1. IP-based SFC
 #### 1.1 起動
