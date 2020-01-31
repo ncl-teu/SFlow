@@ -8,6 +8,12 @@ Though there are several workflow enginges to handle task allocation, this workf
   - スケジューリングアルゴリズムとしてはSF-CUV, HEFT, PEFT, FWS, CoordVNFを実装しており，設定ファイルにて選択できます．
 - ファンクション=Dockerコンテナであり，まずはホスト内にバッチ処理がインストールされているかチェックします．インストール済みであればそのまま実行し，されていなければ指定のDockerリポジトリからDockerイメージをロードしてから実行します．
 - チェイニング方式: IPベースによるチェイニングに加えて，ICNによるチェイニングが可能です．ICNによって一度実行したファンクションの結果データを再実行することなく取得でき，処理時間の節約になります．
+## 構成
+想定する環境ですが，
+- **Delegator: ワークフロー情報(JSONファイル），ワーカー情報（JSONファイル），ジョブ情報（JSONファイル）を保持して，スケジューリングする．**
+- **File Server: ジョブ実行に必要なファイルを保持し，FTP経由で提供する**
+- **Private Docker Repository: Dockerイメージを格納しておき，実行時にワーカーへ提供する**
+が必要です．
 
 ## 使い方
 ### 1. IP-based SFC
