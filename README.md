@@ -15,6 +15,7 @@
 ![system](https://user-images.githubusercontent.com/4952618/73509139-7a055200-4421-11ea-9108-245a240a87be.png)
 
 ## Delegator側の設定
+### 設定ファイル
 - 設定ファイルは**nclw2.properties**で，下記のように設定します．自身で設定する必要がある箇所のみ表示しています．
 使用時には，このリポジトリにあるnclw2.propertiesを用いて，書き換えてください（↓をコピペしないでください）．
 ~~~
@@ -59,6 +60,7 @@ docker_repository_password=
 # /home/test/work/docker_tar 以下に保存される．
 docker_localdir=docker_tar
 ~~~ 
+### 環境情報のファイル
 - 環境情報ファイル(JSON)の形式は，↓のとおりです．実際に使われる特定環境用のファイルは，nclw/env_ncl.json に記載されています．
 - 下記の例は，データセンター(クラウド)が一つで，物理ホストがデータセンターに1台あります．当該ホストは2コアで，各コアではHyper-ThreadがONであるため，
    1コアあたり2つのvCPU（仮想CPU）が動作可能ということです．
