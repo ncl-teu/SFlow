@@ -13,6 +13,7 @@ Though there are several workflow enginges to handle task allocation, this workf
 - **Delegator: ワークフロー情報(JSONファイル），ワーカー情報（JSONファイル），ジョブ情報（JSONファイル）を保持して，スケジューリングする．**
 - **ファイルサーバ: ジョブ実行に必要なファイルを保持し，FTP経由で提供する**
 - **Dockerリポジトリ: Dockerイメージを格納しておき，実行時にワーカーへ提供する**
+
 が必要です．
 ![system](https://user-images.githubusercontent.com/4952618/73509139-7a055200-4421-11ea-9108-245a240a87be.png)
 
