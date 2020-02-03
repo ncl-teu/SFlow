@@ -61,7 +61,7 @@ docker_repository_password=
 # /home/test/work/docker_tar 以下に保存される．
 docker_localdir=docker_tar
 ~~~ 
-### 環境情報のファイル
+### 環境情報のファイル(Delegatorで保持）
 - 環境情報ファイル(JSON)の形式は，↓のとおりです．実際に使われる特定環境用のファイルは，nclw/env_ncl.json に記載されています．
 - 下記の例は，データセンター(クラウド)が一つで，物理ホストがデータセンターに1台あります．当該ホストは2コアで，各コアではHyper-ThreadがONであるため，
    1コアあたり2つのvCPU（仮想CPU）が動作可能ということです．
@@ -104,6 +104,65 @@ docker_localdir=docker_tar
   ]
 }
 ~~~
+### Workflowジョブの設定
+- Job情報のファイル(JSON)は，↓のとおりです．nclw/job_ncl.json またはnclw/job_ffmpeg.jsonに記載されています．
+- 下記のJobは，nclw/ffmpeg.jsonのフォーマットです．
+- $R^ファイル　は，もし無ければFTPサーバからダウンロードしてくるという意味です．
+- $F^先行ファンクションIDは，先行ファンクションからの出力データを入力とする，という意味です．
+- 後続ファンクションリストはdest_task_idにて複数指定します．そして，dest_taskに相当するファンクションにて，$F^先行ファンクションIDと指定します．
+- DUMMYは，Dockerのentrypointに引き渡す場合は無視されます．実際には2つ目移行の箇所がentrypointへ渡されます．
+- rootは，ジョブIDで，その中にtask_listがそれぞれ格納されています．
+~~~
+{
+  "job_id": 1,
+  "task_list": [
+    {
+      "task_id": 1, "workload": 10000, "type": 1, "usage": 70, "cmd": "ffmpeg -i  $R^./ncloutput/input.mp4 ./ncloutput/1st.flv",
+      "out_file_list": [
+      { "path": "./ncloutput/1st.flv", "size": 5,"dest_task_id": [2,3 ] }],
+      "docker-tarname":"ffmpeg_1st.tar", "docker-imagename": "ffmpeg_1st"
+    },
+    {
+      "task_id": 2, "workload": 100000, "type": 2, "usage": 80, "cmd": "DUMMY -i  $F^1 -r 60 ./ncloutput/image_of_2nd_%03d.png ./ncloutput/ffmpeg_2nd.zip ./ncloutput/*.png",
+      "out_file_list": [
+        {"path": "./ncloutput/ffmpeg_2nd.zip", "size": 150, "dest_task_id": [4] }
+      ],
+      "docker-tarname":"ffmpeg_2nd.tar", "docker-imagename": "ffmpeg_2nd"
+    },
+    {
+      "task_id": 3, "workload": 6000, "type": 3, "usage": 40, "cmd": "ffmpeg -i $F^1 ./ncloutput/3rd.gif",
+      "out_file_list": [
+        {"path": "./ncloutput/3rd.gif", "size": 68, "dest_task_id": [4] }
+      ],
+      "docker-tarname":"ffmpeg_3rd.tar", "docker-imagename": "ffmpeg_3rd"
+    },
+    {
+      "task_id": 4, "workload": 80000, "type": 4, "usage": 60, "cmd": "DUMMY  ./ncloutput/4th.mp4 ./ncloutput/ffmpeg_2nd.zip -i ./ncloutput/image_of_2nd_%03d.png ./ncloutput/4th.mp4",
+      "out_file_list": [
+        {"path": "./ncloutput/4th.mp4", "size": 5, "dest_task_id": [] }
+      ],
+      "docker-tarname":"ffmpeg_4th.tar", "docker-imagename": "ffmpeg_4th"
+    }
+  ]}
+~~~
+- 例えばtask_idが2の場合は，DockerFileは
+~~~
+FROM alpine:latest
+WORKDIR /
+RUN apk --update add ffmpeg && \
+    mkdir mnt_point && apk --update add zip
+COPY docker-entrypoint.sh ./
+ENTRYPOINT ["./docker-entrypoint.sh"]
+~~~
+となっており，docker-entrypoint.shは，
+~~~
+#!/bin/sh
+
+ffmpeg $1 $2 $3 $4 $5
+zip $6 $7
+~~~
+という形式になっています．そしてdocker-entrypoint.shに対して，先程のJSONファイルのDUMMY移行の引数が入ってくる仕組みです．
+
 ## 使い方
 ### 1. IP-based SFC
 #### 1.1 起動
