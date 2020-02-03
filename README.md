@@ -104,7 +104,7 @@ docker_localdir=docker_tar
   ]
 }
 ~~~
-### Workflowジョブの設定
+### Workflowジョブの設定（Delegatorで保持）
 - Job情報のファイル(JSON)は，↓のとおりです．nclw/job_ncl.json またはnclw/job_ffmpeg.jsonに記載されています．
 - 下記のJobは，nclw/ffmpeg.jsonのフォーマットです．
 - $R^ファイル　は，もし無ければFTPサーバからダウンロードしてくるという意味です．
@@ -162,6 +162,9 @@ ffmpeg $1 $2 $3 $4 $5
 zip $6 $7
 ~~~
 という形式になっています．そしてdocker-entrypoint.shに対して，先程のJSONファイルのDUMMY移行の引数が入ってくる仕組みです．
+### Dockerイメージ作成リポジトリへの配備
+- DockerFileとdocker-entryopoint.shのあるディレクトリにて`docker save イメージ名 -o 名前.tar` にて，イメージファイル(.tar）を作成します．
+- あとは，Dockerリポジトリの指定場所（docker_repository_home）にアップロードしておけばOKです．イメージ名，名前ともにdocker-imagenameです．
 
 ## 使い方
 ### 1. IP-based SFC
