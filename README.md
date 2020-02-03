@@ -162,7 +162,7 @@ ffmpeg $1 $2 $3 $4 $5
 zip $6 $7
 ~~~
 という形式になっています．そしてdocker-entrypoint.shに対して，先程のJSONファイルのDUMMY移行の引数が入ってくる仕組みです．
-### Dockerイメージ作成リポジトリへの配備
+### Dockerイメージの作成と，リポジトリへの配備
 - DockerFileとdocker-entryopoint.shのあるディレクトリにて`docker save イメージ名 -o 名前.tar` にて，イメージファイル(.tar）を作成します．
 - あとは，Dockerリポジトリの指定場所（docker_repository_home）にアップロードしておけばOKです．イメージ名，名前ともにdocker-imagenameです．
 
