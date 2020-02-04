@@ -1,0 +1,31 @@
+{
+  "job_id": 1,
+  "task_list": [
+    {
+      "task_id": 1, "workload": 10000, "type": 1, "usage": 70, "cmd": "ffmpeg -i  $R^./ncloutput/input.mp4 ./ncloutput/1st.flv",
+      "out_file_list": [
+      { "path": "./ncloutput/1st.flv", "size": 5,"dest_task_id": [2,3 ] }],
+      "docker-tarname":"ffmpeg_1st.tar", "docker-imagename": "ffmpeg_1st"
+    },
+    {
+      "task_id": 2, "workload": 100000, "type": 2, "usage": 80, "cmd": "DUMMY -i  $F^1 -r 60 ./ncloutput/image_of_2nd_%03d.png ./ncloutput/ffmpeg_2nd.zip ./ncloutput/*.png",
+      "out_file_list": [
+        {"path": "./ncloutput/ffmpeg_2nd.zip", "size": 150, "dest_task_id": [4] }
+      ],
+      "docker-tarname":"ffmpeg_2nd.tar", "docker-imagename": "ffmpeg_2nd"
+    },
+    {
+      "task_id": 3, "workload": 6000, "type": 3, "usage": 40, "cmd": "ffmpeg -i $F^1 ./ncloutput/3rd.gif",
+      "out_file_list": [
+        {"path": "./ncloutput/3rd.gif", "size": 68, "dest_task_id": [4] }
+      ],
+      "docker-tarname":"ffmpeg_3rd.tar", "docker-imagename": "ffmpeg_3rd"
+    },
+    {
+      "task_id": 4, "workload": 80000, "type": 4, "usage": 60, "cmd": "DUMMY  ./ncloutput/4th.mp4 ./ncloutput/ffmpeg_2nd.zip -i ./ncloutput/image_of_2nd_%03d.png ./ncloutput/4th.mp4",
+      "out_file_list": [
+        {"path": "./ncloutput/4th.mp4", "size": 5, "dest_task_id": [] }
+      ],
+      "docker-tarname":"ffmpeg_4th.tar", "docker-imagename": "ffmpeg_4th"
+    }
+  ]}
