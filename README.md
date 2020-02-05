@@ -164,7 +164,7 @@ zip $6 $7
 という形式になっています．そしてdocker-entrypoint.shに対して，先程のJSONファイルのDUMMY移行の引数が入ってくる仕組みです．
 ### Dockerイメージの作成と，リポジトリへの配備
 - DockerFileとdocker-entryopoint.shのあるディレクトリにて`docker save イメージ名 -o 名前.tar` にて，イメージファイル(.tar）を作成します．
-- あとは，Dockerリポジトリの指定場所（docker_repository_home）にアップロードしておけばOKです．イメージ名，名前ともにdocker-imagenameです．
+- あとは，Dockerリポジトリの指定場所（docker_repository_home）にtarファイルをアップロードしておけばOKです．イメージ名，名前ともにdocker-imagenameの値です．
 
 ## 使い方
 ### 1. IP-based SFC
