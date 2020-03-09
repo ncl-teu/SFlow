@@ -182,3 +182,11 @@ zip $6 $7
 
 ### 3. ICN-based autonomous SFC(AutoICN-SFC)
 各ノードが，自身のFIBの中からSFの割当先を決めて，その結果に基づいてICN-SFCを行うアルゴリズム実装です．
+
+### APIについて
+#### Faceの作成
+`TcpFace Face名 = NclwNFDMgr.getIns().createFace(宛先IPアドレス, 送信元IPアドレス);`
+#### FIBへのFace追加
+`NclwNFDMgr.getIns().getFib().insert(Name型のPrefix, 追加するFace, コスト値(例: 1）);`
+#### PITへのFace追加
+`NclwNFDMgr.getIns().getPit().insert(Interest型のinterest);`
