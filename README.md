@@ -93,7 +93,7 @@ docker_localdir=docker_tar
             { "vcpu_id": "0^0^0^0^1" }
           ]
           },
-            {"vm_id": "0^0^12", "ram": 8096, "ip": "192.168.1.xxx", "vcpu_list": [
+            {"vm_id": "0^0^1", "ram": 8096, "ip": "192.168.1.xxx", "vcpu_list": [
             { "vcpu_id": "0^0^0^1^0" }
           ]
           }
