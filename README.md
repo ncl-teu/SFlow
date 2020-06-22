@@ -169,7 +169,7 @@ zip $6 $7
 ## 使い方
 ### 0. スケジューリング結果のJsonファイル化
 `./schedgen.sh [環境情報ファイル] [ジョブ情報ファイル] [Jsonファイルの出力先パス]`という形式です．たとえば，
-`./schedgen.sh nclw/env.json job_ffmpeg.json ret.json`とすれば，nclw/env.jsonの環境情報，nclw_job_ffmpeg.jsonのワークフロージョブ情報を読み込んでスケジューリングをして，そしてret.jsonにファイルが新規作成（もしくは上書き）されます．出力先の構造ですが，**ジョブ情報ファイルの各ファンク所に，割当先のipアドレス(ip)，vCPUID(vcpu_id)，VMのID(vm_id)が付与された状態になっています**. つまり，割当先の性能を知りたければ，環境情報ファイルを別途読み込んでおくことが必要になります．
+`./schedgen.sh nclw/env.json job_ffmpeg.json ret.json`とすれば，nclw/env.jsonの環境情報，nclw_job_ffmpeg.jsonのワークフロージョブ情報を読み込んでスケジューリングをして，そしてret.jsonにファイルが新規作成（もしくは上書き）されます．出力先の構造ですが，**ジョブ情報ファイルの各ファンクション(task_list内の各taskノード）に，割当先のipアドレス(ip)，vCPUID(vcpu_id)，VMのID(vm_id)が付与された状態になっています**. つまり，割当先の性能を知りたければ，環境情報ファイルを別途読み込んでおくことが必要になります．
 ### 1. IP-based SFC
 #### 1.1 起動
 1. Delegator側にて，`./nclw_startworkder.sh`によって**nclw_hosts**に記載されている全ワーカー側プロセスを起動．これにより，各ワーカーは，データ受信待ちをする．
