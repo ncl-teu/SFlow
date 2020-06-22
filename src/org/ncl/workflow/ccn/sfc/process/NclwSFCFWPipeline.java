@@ -45,8 +45,11 @@ import java.util.concurrent.ScheduledExecutorService;
  */
     public class NclwSFCFWPipeline extends NclwFWPipeline {
 
+     //   protected NclwNFDSendThread sender;
+
     public NclwSFCFWPipeline(ScheduledExecutorService scheduler) {
         super(scheduler);
+
     }
 
     /**
@@ -55,28 +58,22 @@ import java.util.concurrent.ScheduledExecutorService;
      * @param interest
      */
     public  void onIncomingInterest(Face inFace, Interest interest) {
-// TODO: in the c++ code, they set the incoming FaceId, but jndn does
-// not provide similiar function. Need to find a solution
-// interest.setIncomingFaceId();
-        //logger.log(Level.INFO, "onIncomingInterest: {0}", interest.toUri());
-        // localhost scope control
-        //System.out.println("****INCOMMINGINTEREST:"+"Local:"+inFace.getLocalUri().getInet().getHostAddress() + "/Remote:"+inFace.getRemoteUri().getInet().getHostAddress());
-/*
-        boolean isViolatingLocalhost = !inFace.isLocal()
-                && LOCALHOST_NAME.match(interest.getName());
-        if (isViolatingLocalhost) {
-            return;
-        }
-
- */
         System.out.println("****INCOMMINGINTEREST:"+"Local:"+inFace.getLocalUri().getInet().getHostAddress() + "/Remote:"+inFace.getRemoteUri().getInet().getHostAddress());
 
 
         NCLWData data = NclwNFDMgr.getIns().fetchNCLWData(interest);
+
+        if(interest.getApplicationParameters().isNull()){
+            System.out.println("Data is NULL!");
+        }else{
+            //System.out.println("Param: "+ interest.getApplicationParameters().toString());
+        }
         SFC sfc = data.getSfc();
+
         NFVEnvironment env = data.getEnv();
         VNF predVNF = sfc.findVNFByLastID(data.getFromTaskID());
         VNF toVNF = sfc.findVNFByLastID(data.getToTaskID());
+
         //System.out.println("***FIRST COME!!"+"Local:"+inFace.getLocalUri().getInet().getHostAddress()+"/Remote:"+inFace.getRemoteUri().getInet().getHostAddress());
         // handle registration commands; TODO this should be applied as an internal
         // face to the FIB but current interface does not allow this
@@ -85,9 +82,7 @@ import java.util.concurrent.ScheduledExecutorService;
                 prefixRegistration.call(interest, inFace, this);
                 return;
             }
-
         }
-
         // PIT insert
 
         PitEntry pitEntry = pit.insert(interest).getFirst();
@@ -95,29 +90,41 @@ import java.util.concurrent.ScheduledExecutorService;
         Iterator<PitInRecord> pIte = pitEntry.getInRecords().iterator();
         while(pIte.hasNext()){
             PitInRecord p = pIte.next();
-            System.out.println("       ***Remote:"+p.getFace().getRemoteUri().getInet().getHostAddress() + "/Local:"+p.getFace().getLocalUri().getInet().getHostAddress());
+            System.out.println("***Remote:"+p.getFace().getRemoteUri().getInet().getHostAddress() + "/Local:"+p.getFace().getLocalUri().getInet().getHostAddress());
         }
        // pitEntry.insertOrUpdateInRecord(inFace, interest);
 
         if(toVNF != null){
             VM predHost = NCLWUtil.findVM(env, predVNF.getvCPUID());
             VM toHost = NCLWUtil.findVM(env, toVNF.getvCPUID());
-            //もしpred/toが同一ホストに割り当てられているなら，Interestは送信せずにカウンタのみを+するだけ．
-            if(predHost.getIpAddr().equals(toHost.getIpAddr())) {
-                WorkflowJob job = data.getJob();
-                String prefix = job.getJobID() + "^" + data.getFromTaskID();
-                HashMap<String, NFDTask> taskPool = NFDTaskEngine.getIns().getTaskPool();
-                NFDTask task;
-                if (taskPool.containsKey(prefix)) {
-                    task = (NFDTask) NFDTaskEngine.getIns().getTaskPool().get(prefix);
-                } else {
-                    task = (NFDTask) job.getNfdTaskMap().get(data.getFromTaskID());
-                    NFDTaskEngine.getIns().getTaskPool().put(prefix, task);
+
+            //もしpred/toが同一ノード(VM含む）に割り当てられているなら，Interestは送信せずにカウンタのみを+するだけ．
+            //そして，PITに追加する．
+            if(predHost != null && toHost != null){
+                if(predHost.getIpAddr().equals(toHost.getIpAddr())) {
+
+                    WorkflowJob job = data.getJob();
+                    String prefix = job.getJobID() + "^" + data.getFromTaskID();
+                    HashMap<String, NFDTask> taskPool = NFDTaskEngine.getIns().getTaskPool();
+                    NFDTask task;
+
+                    if (taskPool.containsKey(prefix)) {
+                        task = (NFDTask) NFDTaskEngine.getIns().getTaskPool().get(prefix);
+                    } else {
+
+                        task = (NFDTask) job.getNfdTaskMap().get(data.getFromTaskID());
+                        NFDTaskEngine.getIns().getTaskPool().put(prefix, task);
+
+                    }
+                    //カウンタを+する．
+                    task.addInterestCounter();
+
                 }
-                //カウンタを+する．
-                task.addInterestCounter();
+            }else{
+
 
             }
+
 
         }
         this.processPit(inFace, interest, pitEntry);
@@ -126,6 +133,7 @@ import java.util.concurrent.ScheduledExecutorService;
     }
 
     public void processPit(Face inFace, Interest interest, PitEntry pitEntry){
+        System.out.println("***PROCESS PIT***");
         // detect duplicate Nonce
         if(inFace != null){
             int dnw = pitEntry.findNonce(interest.getNonce(), inFace);
@@ -147,6 +155,7 @@ import java.util.concurrent.ScheduledExecutorService;
         ForwardingPipelineSearchCallback callback = new NclwSFCFWPipeline.NclwForwardingPipelineSearchCallback(inFace, pitEntry);
         //ForwardingPipelineSearchCallback callback = this.NclwForwardingPipelineSearchCallback(inFace, pitEntry);
         //Pitに無ければ，CSを見る．
+
         if (inRecords == null || inRecords.isEmpty()) {
             cs.find(interest, callback);
         } else {
@@ -176,12 +185,14 @@ import java.util.concurrent.ScheduledExecutorService;
     public void onOutgoingInterest( NFDTask fromTask, NFDTask toTask, NCLWData data, PitEntry pitEntry, Face outFace, boolean wantNewNonce) {
         //super.onOutgoingInterest(pitEntry, outFace, wantNewNonce);
         if (outFace.getFaceId() == FaceTable.INVALID_FACEID) {
+            System.out.println("***ERROR: Invalid FaceID***");
             return;
         }
 
 
         // scope control
         if (pitEntry.violatesScope(outFace)) {
+            System.out.println("***ERROR: Invalid Scope***");
 
             return;
         }
@@ -190,6 +201,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
         List<PitInRecord> inRecords = pitEntry.getInRecords();
         if (inRecords == null || inRecords.isEmpty()) {
+            System.out.println("***ERROR: inRecords Empty***");
+
             return;
 
         }
@@ -214,6 +227,8 @@ import java.util.concurrent.ScheduledExecutorService;
             }
         }
         if (pickedInRecord == null) {
+            System.out.println("***ERROR: PickedInRecord Null***");
+
             return;
 
         }
@@ -226,7 +241,8 @@ import java.util.concurrent.ScheduledExecutorService;
         newInterest.setApplicationParameters(new Blob(data.getAllBytes()));
 
 
-        //interest.setName(targetName);
+
+        newInterest.setName(targetName);
 
         if (wantNewNonce) {
             //generate and set new nonce
@@ -240,9 +256,19 @@ import java.util.concurrent.ScheduledExecutorService;
 
         // insert OutRecord
         pitEntry.insertOrUpdateOutRecord(outFace, interest);
-        System.out.println("**InterestGO: TOTask:"+data.getFromTaskID() + "@"+data.getIpAddr()+"/LocalURI:"+outFace.getLocalUri()+"/RemoteURI:"+outFace.getRemoteUri());
+        System.out.println("size:"+interest.getApplicationParameters().size());
 
+        System.out.println("**InterestGO: TOTask:"+data.getFromTaskID() + "@"+data.getIpAddr()+"/LocalURI:"+outFace.getLocalUri()+"/RemoteURI:"+outFace.getRemoteUri());
+        System.out.println("***SIZE before:"+newInterest.getApplicationParameters().size());
+/*
+        NclwNFDSendThread sender = new NclwNFDSendThread();
+        Thread sendThread = new Thread(sender);
+        sendThread.start();
+*/
         outFace.sendInterest(newInterest);
+
+
+        //this.sender.getInterestDataQueue().add(data);
 
 
     }
@@ -319,6 +345,28 @@ System.out.println("***Data COME!!****");
         NclwNFDMgr.getIns().addFIBEntryCallBack((TcpFace)face);
     }
 
+    public boolean addCSEntry(NCLWData  nData){
+        //宛先タスクのIDを取り出す．
+        SFC sfc = nData.getSfc();
+        WorkflowJob job = nData.getJob();
+        NFDTask fromTask = job.getNfdTaskMap().get(nData.getFromTaskID());
+        NFDTask toTask = job.getNfdTaskMap().get(nData.getToTaskID());
+        //Face inFace = nData.getInFace();
+
+        //当該タスクのからNameを生成する．
+        Name fromName = NclwNFDMgr.getIns().createPrefix(fromTask, toTask);
+        //toIDを見て，toTaskからPrefixを生成する．
+        //そのPrefixがPITにあるかどうか
+        // PIT match
+        Data data = new Data();
+        data.setName(fromName);
+        //NCLWDataをバイナリ変換してdataへセットする．
+        byte[] bs = nData.getAllBytes();
+        data.setContent(new Blob(bs));
+        cs.insert(data, false);
+
+        return true;
+    }
     /**
      * Task処理後に，Dataを送り出す処理です．
      * 当該タスクのprefixがPITにあるかどうかをチェックし，
@@ -358,15 +406,17 @@ System.out.println("**PIT No Match!!**");
 
             }else{
                 if(!fromTask.getInDataMap().isEmpty()){
+
                     ///TcpFace inFace = NclwNFDMgr.getIns().getFromFaceMap().get(job.getJobID()+"^"+fromTask.getTaskID());
                     //onDataUnsolicited(inFace, data);
                 }
 
 
             }
-            return;
+            if(NCLWUtil.ccn_routing == 0){
+                return;
+            }
         }
-System.out.println("**PIT OK Match!!**");
         Iterator<List<PitEntry>> pIte = pitMatches.iterator();
         while(pIte.hasNext()){
             List<PitEntry> pl = pIte.next();
@@ -568,7 +618,6 @@ System.out.println("**PIT OK Match!!**");
 
         //logger.log(Level.INFO, "onOutgoingData {0}", data.getName().toUri());
         if (outFace.getFaceId() == FaceTable.INVALID_FACEID) {
- //System.out.println("463");
             return;
         }
 
@@ -577,8 +626,6 @@ System.out.println("**PIT OK Match!!**");
                 && LOCALHOST_NAME.match(data.getName());
         if (isViolatingLocalhost) {
             // (drop)
-            //System.out.println("472");
-
             return;
         }
        // System.out.println("476");

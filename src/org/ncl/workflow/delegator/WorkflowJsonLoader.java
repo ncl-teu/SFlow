@@ -42,6 +42,7 @@ public class WorkflowJsonLoader {
             this.root = job_mapper.readTree(new File(path));
             HashMap<Long, JsonNode> jTaskMap = new HashMap<Long, JsonNode>();
 
+
             //# of tasks in the job.
             long tasknum = this.root.get("task_list").size();
 

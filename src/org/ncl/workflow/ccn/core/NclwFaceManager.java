@@ -13,6 +13,7 @@ import com.intel.jnfd.deamon.fw.ForwardingPipeline;
 import com.intel.jnfd.util.NfdCommon;
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Interest;
+import net.named_data.jndn.Name;
 import org.ncl.workflow.util.NCLWUtil;
 
 import java.io.IOException;
@@ -298,6 +299,8 @@ public class NclwFaceManager implements Runnable, FaceManager {
         public void onCompleted(Object result) {
             if (result instanceof Face) {
                 pipeline.addFace((Face) result);
+                NclwNFDMgr.getIns().getFib().insert(new Name(NCLWUtil.NCLW_PREFIX), (TcpFace)result, 1);
+
             }
         }
 
@@ -349,6 +352,7 @@ public class NclwFaceManager implements Runnable, FaceManager {
         @Override
         public void onInterest(Interest interest, Face face) {
             logger.info("OnInterest is called");
+            System.out.println("****ON INTEREST RECV Called");
             pipeline.onInterest(face, interest);
         }
 

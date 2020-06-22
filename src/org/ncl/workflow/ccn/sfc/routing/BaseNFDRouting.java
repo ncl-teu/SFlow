@@ -15,14 +15,21 @@ public abstract class BaseNFDRouting  {
      * @param name
      * @return
      */
-    protected abstract Face findFace(Name name);
+    public  abstract Face findFace(Name name);
 
     /**
      * 指定した宛先IPに対応するFaceを返す．
      * @param destIP
      * @return
      */
-    protected abstract Face findFace(String destIP);
+    public  abstract Face findFace(String destIP);
+
+    /**
+     * FIBの初期設定をします．
+     */
+    public  abstract  void initializeFIB(String file);
+
+
 
 
 

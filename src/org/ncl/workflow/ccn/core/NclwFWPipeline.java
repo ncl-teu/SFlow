@@ -21,6 +21,7 @@ import net.named_data.jndn.Data;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.util.Blob;
+import org.ncl.workflow.ccn.sfc.strategy.AutoICNSFCStrategy;
 import org.ncl.workflow.ccn.sfc.strategy.BackTrackStrategy;
 import org.ncl.workflow.util.NCLWUtil;
 
@@ -43,6 +44,7 @@ public class NclwFWPipeline extends ForwardingPipeline {
         cs = new SortedSetCs();
 
         measurement = new Measurement();
+
         switch(NCLWUtil.nfd_strategy){
             case 0:
                 strategyChoice = new StrategyChoice(new BestRouteStrategy2(this));
@@ -52,6 +54,10 @@ public class NclwFWPipeline extends ForwardingPipeline {
                 strategyChoice = new StrategyChoice(new BackTrackStrategy(this));
 
                 break;
+            case 2:
+                strategyChoice = new StrategyChoice(new AutoICNSFCStrategy(this));
+                break;
+
             default:
                 strategyChoice = new StrategyChoice(new BackTrackStrategy(this));
 

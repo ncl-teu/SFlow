@@ -80,6 +80,7 @@ public class NFDTaskEngine implements Serializable, Runnable {
 
         while (true) {
             try {
+            //指定秒ごとに，リソース情報取得のInterestを投げる．
 
             } catch (Exception e) {
 
@@ -88,7 +89,9 @@ public class NFDTaskEngine implements Serializable, Runnable {
     }
 
 
-
+    /**
+     * Dataパケット送受信用スレッド
+     */
     public void startSendRecvThreads(){
         try{
             ServerSocket listen_socket = new ServerSocket(NCLWUtil.port);

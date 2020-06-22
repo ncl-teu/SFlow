@@ -6,6 +6,7 @@ import net.gripps.cloud.nfv.NFVEnvironment;
 import net.gripps.cloud.nfv.sfc.SFC;
 
 import java.io.*;
+import java.util.HashMap;
 
 /**
  * Created by Hidehiro Kanemitsu on 2019/05/01.
@@ -80,7 +81,14 @@ public class NCLWData implements Serializable {
      */
     private byte[] allBytes;
 
-    String pitIPAddr;
+    private String pitIPAddr;
+
+    /**
+     * Prefix, HashMap
+     */
+    //private HashMap<String, HashMap<String, Integer>> ipMap;
+
+    private InterestHopInfo hopInfo;
 
     /**
      * DataがやってきたFace
@@ -101,7 +109,11 @@ public class NCLWData implements Serializable {
         this.sfc = sfc;
         this.env = env;
         this.job = job;
+        //this.ipMap = new HashMap<String,  HashMap<String, Integer>>();
+        this.hopInfo = new InterestHopInfo();
     }
+
+
 
     public NCLWData(String readFilePath, String writeFilePath, long fromTaskID, long toTaskID,
                     String ipAddr, boolean isFile, int portNumber) {
@@ -116,6 +128,8 @@ public class NCLWData implements Serializable {
         this.msg = msg;
         this.sfc = null;
         this.job = null;
+        this.hopInfo = new InterestHopInfo();
+
     }
 
     public NCLWData(String readFilePath, String writeFilePath,
@@ -130,6 +144,8 @@ public class NCLWData implements Serializable {
         this.sfc = sfc;
         this.env = env;
         this.job = job;
+        this.hopInfo = new InterestHopInfo();
+
     }
 
     public byte[] convertToBytes(){
@@ -138,16 +154,25 @@ public class NCLWData implements Serializable {
             ObjectOutputStream oos = new ObjectOutputStream(baos);
             oos.writeObject(this);
 
-            baos.close();
-            oos.close();
 
             //こんな感じでbyte配列になります。
             this.allBytes = baos.toByteArray();
+            baos.close();
+            oos.close();
+
         }catch(Exception e){
             e.printStackTrace();
         }
 
         return this.allBytes;
+    }
+
+    public InterestHopInfo getHopInfo() {
+        return hopInfo;
+    }
+
+    public void setHopInfo(InterestHopInfo hopInfo) {
+        this.hopInfo = hopInfo;
     }
 
     public String getPitIPAddr() {
@@ -255,7 +280,7 @@ public class NCLWData implements Serializable {
     }
 
     public byte[] getAllBytes(){
-        if(this.allBytes == null){
+       if(this.allBytes == null){
             this.convertToBytes();
         }
         return allBytes;
@@ -269,4 +294,6 @@ public class NCLWData implements Serializable {
     public void setBytes(byte[] bytes) {
         this.bytes = bytes;
     }
+
+
 }

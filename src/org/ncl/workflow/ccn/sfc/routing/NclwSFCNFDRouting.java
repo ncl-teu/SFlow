@@ -17,7 +17,7 @@ public class NclwSFCNFDRouting extends BaseNFDRouting {
 
 
     @Override
-    protected Face findFace(Name name) {
+    public  Face findFace(Name name) {
         try{
         /*    InetSocketAddress remoteSocket
                     = (InetSocketAddress) (asynchronousSocketChannel.getRemoteAddress());
@@ -36,7 +36,12 @@ public class NclwSFCNFDRouting extends BaseNFDRouting {
     }
 
     @Override
-    protected Face findFace(String destIP) {
+    public  Face findFace(String destIP) {
         return null;
+    }
+
+    @Override
+    public  void initializeFIB(String file) {
+
     }
 }

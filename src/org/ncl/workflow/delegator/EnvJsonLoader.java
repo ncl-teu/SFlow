@@ -84,11 +84,29 @@ public class EnvJsonLoader {
                             double rate = 1.0;
                             HashMap<Long, VCPU> vcpuMap = new HashMap<Long, VCPU>();
                             String corePrefix = core.get("core_id").asText();
+                            long coreMips;
+                            if(core.has("mips")){
+                                 coreMips = core.get("mips").asLong();
+
+                            }else{
+                                coreMips = mips;
+                            }
+
                             int vCPUNum = core.get("vcpu_list").size();
                             //VCPUを生成．
                             for (int m = 0; m < vCPUNum; m++) {
                                 JsonNode vCPU = core.get("vcpu_list").get(m);
                                 String prefix = vCPU.get("vcpu_id").asText();
+                                long vMips;
+                                if(vCPU.has("mips")){
+                                     vMips = vCPU.get("mips").asLong();
+
+                                }else if(core.has("mips")){
+                                    vMips = coreMips;
+                                }else{
+                                    vMips = mips;
+                                }
+
                                 HashMap<String, Long> pMap = new HashMap<String, Long>();
                                 pMap.put(CloudUtil.ID_DC, new Long(i));
                                 pMap.put(CloudUtil.ID_HOST, new Long(j));
@@ -96,7 +114,7 @@ public class EnvJsonLoader {
                                 pMap.put(CloudUtil.ID_CORE, new Long(l));
                                 pMap.put(CloudUtil.ID_VCPU, new Long(m));
                                 //  String cPrefix = i + CloudUtil.DELIMITER + j + CloudUtil.DELIMITER + k + CloudUtil.DELIMITER + l;
-                                VCPU vcpu = new VCPU(prefix, corePrefix, pMap, null, (long) (mips * rate), 0);
+                                VCPU vcpu = new VCPU(prefix, corePrefix, pMap, null, (long) (vMips * rate), 0);
                                 vcpuMap.put(new Long(m), vcpu);
                                 String id = vcpu.getPrefix();
                                 vQueue.offer(vcpu);
@@ -143,7 +161,8 @@ public class EnvJsonLoader {
                     chost.setIpAddr(host.get("ip").asText());
                     hostMap.put(new Long(j), chost);
                     dc.setComputeHostMap(hostMap);
-                    retMap.put(new Long(i), dc);
+                   // retMap.put(new Long(i), dc);
+                    retMap.put(dc.getId(), dc);
                     this.env.getGlobal_hostMap().put(hostPrefix, chost);
 
 

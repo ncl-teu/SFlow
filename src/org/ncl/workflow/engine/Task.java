@@ -183,7 +183,6 @@ public class Task implements Serializable, Runnable {
             }
             String headStr = str.substring(0, 3);
 
-
             if (headStr.equals("$F^")) {
                 long taskID = Long.valueOf(str.substring(3));
                 NCLWData inData = this.inDataMap.get(taskID);
@@ -208,13 +207,15 @@ public class Task implements Serializable, Runnable {
 
                 String prefilePath = str.substring(3);
 
-
                 cmd = cmd.replace(str, prefilePath);
                 File file = new File(prefilePath);
                 if(!file.exists()){
+                    System.out.println("File GET Mode");
                     if(NCLWUtil.input_file_transfer_protocol.equals("scp")){
+
                         this.getFIleBySCP(prefilePath);
                     }else{
+
                         //Get the file via FTP.
                         this.getFileByFTP(prefilePath);
                     }
@@ -412,7 +413,7 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
 
             os = new FileOutputStream(filePath);// Client side
             String serverPath = "/"+NCLWUtil.ftp_server_homedirName + "/"+this.getJobID() + "/"+file.getName();
-
+System.out.println("ServerPath:"+serverPath);
 
             fp.retrieveFile(serverPath, os);// サーバー側
             os.close();
@@ -436,7 +437,7 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
         return true;
     }
 
-    public void getFIleBySCP(String filePath){
+    public  void getFIleBySCP(String filePath){
         try {
             //Try to save docker tar file.
             Connection conn = new Connection(NCLWUtil.ftp_server_ip);
@@ -454,13 +455,17 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
                         dir.mkdirs();
                     }
                 }
-                String newPath = filePath.replace(filePath, file.getName());
+                //String newPath = filePath.replace(filePath, file.getName());
+                //String newPath = filePath;
+                String newPath = file.getParent();
 
 
 
 
-                String serverPath = "/"+NCLWUtil.ftp_server_homedirName + "/"+this.getJobID() + "/"+file.getName();
+                String serverPath = NCLWUtil.ftp_server_homedirName + "/"+this.getJobID() + "/"+file.getName();
+                System.out.println("newPath:"+newPath);
                 scp.get(serverPath, newPath);
+                System.out.println("OK:"+newPath);
 
                 conn.close();
             } else {
@@ -469,28 +474,40 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
             conn.close();
         }catch(Exception e){
             e.printStackTrace();
+            StackTraceElement elem[] = e.getStackTrace();
+            for(int i=0;i<elem.length;i++){
+                System.out.println(elem[i]);
+            }
         }
     }
     public void getFileByFTP(String filePath) {
         FileOutputStream os = null;
         File  file = new File(filePath);
 
+        String tmp = "/"+NCLWUtil.ftp_server_homedirName + "/"+this.getJobID() + "/"+file.getName();
+        System.out.println("serverPath:"+tmp);
 
         FTPClient fp = new FTPClient();
+        System.out.println("484");
         FileInputStream is = null;
         try {
+            System.out.println("487");
 
             fp.connect(NCLWUtil.ftp_server_ip);
+
             if (!FTPReply.isPositiveCompletion(fp.getReplyCode())) { // コネクトできたか？
                 System.out.println("connection failed");
                 System.exit(1); // 異常終了
             }
+            System.out.println("494");
 
             if (fp.login(NCLWUtil.ftp_server_id, NCLWUtil.ftp_server_pass) == false) { // ログインできたか？
                 System.out.println("***FTP login failed****");
                 System.exit(1); // 異常終了
             }
             fp.setFileType(FTP.BINARY_FILE_TYPE);
+            System.out.println("501");
+
 // ファイル受信
             if(!(file.getParent() == null)){
                 File dir = new File(file.getParent());
@@ -498,10 +515,10 @@ System.out.println("LOAD RESULT:"+retBuf.toString());
                     dir.mkdirs();
                 }
             }
+            System.out.println("510");
 
             os = new FileOutputStream(filePath);// Client side
             String serverPath = "/"+NCLWUtil.ftp_server_homedirName + "/"+this.getJobID() + "/"+file.getName();
-
 
             fp.retrieveFile(serverPath, os);// サーバー側
             os.close();
@@ -761,7 +778,11 @@ System.out.println("Exec RESULT:"+retBuf.toString());
                                     VNF sucVNF = this.sfc.findVNFByLastID(targetID);
                                     String sucVCPUID = sucVNF.getvCPUID();
                                     VM host = NCLWUtil.findVM(this.env, sucVCPUID);
-
+                                    System.out.println("***FSI.getpath:"+fsi.getPath());
+                                    System.out.println("***FSI.getWPath:"+fsi.getWritePath());
+                                    System.out.println("***takID:"+this.getTaskID());
+                                    System.out.println("**targetID:"+targetID);
+                                    System.out.println("***host:"+host.getIpAddr());
 
                                     //String ipAddr =;
                                     NCLWData data = new NCLWData(fsi.getPath(), fsi.getWritePath(), this.getTaskID(), targetID, host.getIpAddr(),

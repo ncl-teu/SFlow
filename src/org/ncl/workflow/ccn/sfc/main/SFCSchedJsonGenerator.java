@@ -1,9 +1,5 @@
 package org.ncl.workflow.ccn.sfc.main;
 
-import com.intel.jndn.forwarder.Forwarder;
-import com.intel.jnfd.deamon.face.tcp.TcpFace;
-import net.gripps.cloud.core.VCPU;
-import net.gripps.cloud.core.VM;
 import net.gripps.cloud.nfv.NFVEnvironment;
 import net.gripps.cloud.nfv.NFVUtil;
 import net.gripps.cloud.nfv.clustering.HierarchicalVNFClusteringAlgorithm;
@@ -13,34 +9,17 @@ import net.gripps.cloud.nfv.listscheduling.HEFT_VNFAlgorithm;
 import net.gripps.cloud.nfv.listscheduling.PEFT_VNFAlgorithm;
 import net.gripps.cloud.nfv.optimization.CoordVNFAlgorithm;
 import net.gripps.cloud.nfv.sfc.SFC;
-import net.gripps.cloud.nfv.sfc.VNF;
-import org.ncl.workflow.ccn.core.NclwNFDMgr;
-import org.ncl.workflow.ccn.sfc.process.NFDTask;
-import org.ncl.workflow.ccn.sfc.process.NclwNFD;
-import org.ncl.workflow.ccn.sfc.process.NclwNFDSendThread;
-import org.ncl.workflow.ccn.util.Setup;
-import org.ncl.workflow.comm.NCLWData;
-import org.ncl.workflow.comm.RecvThread;
-import org.ncl.workflow.comm.SendThread;
 import org.ncl.workflow.comm.WorkflowJob;
 import org.ncl.workflow.delegator.EnvJsonLoader;
+import org.ncl.workflow.delegator.SchedGenerator;
 import org.ncl.workflow.delegator.WorkflowJsonLoader;
-import org.ncl.workflow.engine.Task;
 import org.ncl.workflow.util.NCLWUtil;
-import org.ncl.workflow.util.ProcessMgr;
-
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Iterator;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Created by Hidehiro Kanemitsu on 2019/11/19
- * Interestパケット中に，
+ * Created by Hidehiro Kanemitsu on 2020/06/10.
  */
-public class NclwNFDelegator {
+public class SFCSchedJsonGenerator {
+
     public static void main(String[] args){
         //Format: [environment json file] [ job json file]
         //Obtain the env file.
@@ -122,44 +101,10 @@ public class NclwNFDelegator {
                 break;
 
         }
-        Iterator<VNF> vnfIte = sfc.getVnfMap().values().iterator();
-        while(vnfIte.hasNext()){
-            VNF vnf = vnfIte.next();
-            VCPU vcpu = env.getGlobal_vcpuMap().get(vnf.getvCPUID());
-            VM vm = NCLWUtil.findVM(env, vnf.getvCPUID());
-            System.out.println("VNF:"+vnf.getIDVector().get(1) + "@"+vnf.getvCPUID()+"@"+vm.getIpAddr());
-        }
+        //次に,sfcオブジェクトをjsonファイルへ書き出す．
+        SchedGenerator gen = new SchedGenerator(jobLoader, sfc, "SFCRet.json",env);
 
-        //NFDプロセスを起動させる．
-        NclwNFD nfd = new NclwNFD();
-        nfd.process(0,prop, hostFile );
-
-        //-> END VNFがわらいてられているノードに対してInterestパケットを送る．
-        Iterator<Long> endIte = sfc.getEndVNFSet().iterator();
-        ProcessMgr.getIns().setStartTime(System.currentTimeMillis());
-        NclwNFDSendThread sender = new NclwNFDSendThread();
-        Thread sendThread = new Thread(sender);
-        sendThread.start();
-
-        ProcessMgr.getIns().setStartTime(System.currentTimeMillis());
-
-        while(endIte.hasNext()){
-            Long endID = endIte.next();
-            VNF endVNF = sfc.findVNFByLastID(endID);
-            VCPU vcpu = env.getGlobal_vcpuMap().get(endVNF.getvCPUID());
-
-            VM host = NCLWUtil.findVM(env, vcpu.getPrefix());
-            NFDTask endTask = job.getNfdTaskMap().get(endID);
-            //readFilePath: 送るファイルのpath, //相手側で受信後，入力ファイル生成path
-            NCLWData data = new NCLWData(endID, -1, host.getIpAddr(), NCLWUtil.NFD_PORT, sfc, env, job);
-            data.setFile(false);
-            TcpFace toFace = NclwNFDMgr.getIns().createFace(host.getIpAddr(), NclwNFDMgr.getIns().getOwnIPAddr());
-            NclwNFDMgr.getIns().getFib().insert(NclwNFDMgr.getIns().createPrefix(endTask, null), toFace, 1);
-            //当該データを，endタスクのノードへ送る．
-            sender.getInterestDataQueue().add(data);
-        }
+        gen.process();
 
     }
-
-
 }

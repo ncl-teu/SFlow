@@ -18,6 +18,8 @@ public class NclwNFD {
     public NclwNFD() {
     }
 
+
+
     public void process(long nodeID, String propName, String hostFile) {
         try {
             //Set parameters
@@ -34,15 +36,17 @@ public class NclwNFD {
             final FaceManager faceManager;
 
             Forwarder forwarder = new Forwarder();
-            NclwNFDMgr.getIns().initializeTables(hostFile);
 
 //テスト用にデータを準備して，テーブルへ入れておく処理
             Setup setup = new Setup();
             setup.prepare();
             Thread t = new Thread(forwarder);
             t.start();
+            NclwNFDMgr.getIns().initializeTables(hostFile);
+
         } catch (Exception e) {
-            System.out.println("Please input correct arguments [node ID] [property file name] ");
+            e.printStackTrace();
+            //System.out.println("Please input correct arguments [node ID] [property file name] ");
             System.exit(-1);
         }
 

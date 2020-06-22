@@ -2,10 +2,12 @@ package org.ncl.workflow.util;
 
 import net.gripps.cloud.core.VM;
 import net.gripps.cloud.nfv.NFVEnvironment;
+import net.named_data.jndn.util.Common;
 import org.apache.commons.math.random.RandomDataImpl;
 
 import java.io.FileInputStream;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -59,6 +61,15 @@ public class NCLWUtil {
 
     public static int nfd_strategy;
 
+    public static int ccn_routing;
+
+    public static String ccn_bcastaddress;
+
+    public static int ccn_bcastport;
+
+    public static String ccn_networkaddress;
+
+    public static int ccn_fib_maxfaces_entry;
 
 
     private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
@@ -69,6 +80,10 @@ public class NCLWUtil {
     public  static int NFD_PORT = 6363;
 
     public static String NCLW_PREFIX="/nclw/";
+
+    public static String NCLW_PREFIX_VDEPENDENCE = "/vdependence/";
+
+    public static long ccn_connection_timeout;
 
 
     /**
@@ -130,6 +145,17 @@ public class NCLWUtil {
             NCLWUtil.sched_algorithm = Integer.valueOf(NCLWUtil.prop.getProperty("sched_algorithm"));
             NCLWUtil.input_file_transfer_protocol = NCLWUtil.prop.getProperty("input_file_transfer_protocol");
             NCLWUtil.nfd_strategy = Integer.valueOf(NCLWUtil.prop.getProperty("nfd.strategy"));
+            NCLWUtil.ccn_routing = Integer.valueOf(NCLWUtil.prop.getProperty("ccn_routing"));
+            NCLWUtil.ccn_bcastaddress = NCLWUtil.prop.getProperty("ccn_bcastaddress");
+
+            NCLWUtil.ccn_bcastport = Integer.valueOf(NCLWUtil.prop.getProperty("ccn_bcastport"));
+            NCLWUtil.ccn_networkaddress = NCLWUtil.prop.getProperty("ccn_networkaddress");
+            NCLWUtil.ccn_fib_maxfaces_entry = Integer.valueOf(NCLWUtil.prop.getProperty("ccn_fib_maxfaces_entry"));
+            //Common.MAX_NDN_PACKET_SIZE = 12000000;
+
+
+            NCLWUtil.ccn_connection_timeout = Long.valueOf(NCLWUtil.prop.getProperty("ccn_connection_timeout"));
+
 
 
 
@@ -207,7 +233,6 @@ public class NCLWUtil {
             return min + (int) (Math.random() * (max - min + 1));
 
         } else {
-            //豁｣隕丞・蟶・
             double meanValue2 = min + (max - min) * mu;
             double sig = Math.max((meanValue2 - min), (max - meanValue2)) / 3;
             double ran2 = NCLWUtil.rDataGen.nextGaussian(meanValue2, sig);
@@ -224,6 +249,20 @@ public class NCLWUtil {
             return (int) ran2;
         }
 
+    }
+
+    public VM findVMbyIP(NFVEnvironment env, String ip){
+        HashMap<String, VM> vmMap = env.getGlobal_vmMap();
+        Iterator<VM> vmIte = vmMap.values().iterator();
+        VM retVM = null;
+        while(vmIte.hasNext()){
+            VM vm = vmIte.next();
+            if (vm.getIpAddr().equals(ip)) {
+                retVM = vm;
+                break;
+            }
+        }
+        return retVM;
     }
 
     public static VM findVM(NFVEnvironment env, String vcpuID){
@@ -296,7 +335,6 @@ public class NCLWUtil {
 
 
     /**
-     * Long蝙九・荳讒倥・豁｣隕丞・蟶・・蜉幃未謨ｰ
      *
      * @param min
      * @param max
@@ -309,11 +347,9 @@ public class NCLWUtil {
             return min;
         }
         if (dist == 0) {
-            //荳讒伜・蟶・
             return min + (long) (Math.random() * (max - min + 1));
 
         } else {
-            //豁｣隕丞・蟶・
             double meanValue2 = min + (max - min) * mu;
             double sig = Math.max((meanValue2 - min), (max - meanValue2)) / 3;
             double ran2 = NCLWUtil.rDataGen.nextGaussian(meanValue2, sig);
