@@ -102,6 +102,11 @@
         <classpath path="${lib}/jndn-management-master-1.2.2.jar" />
         <classpath path="${lib}/jndn-forwarder.jar" />
         <classpath path="${lib}/jndn-utils.jar" />
+        <classpath path="${lib}/oshi-core-4.4.2.jar" />
+        <classpath path="${lib}/jna-5.5.0.jar.jar" />
+        <classpath path="${lib}/jna-platform-5.5.0.jar" />
+        <classpath path="${lib}/slf4j-api-1.7.30.jar" />
+
 
 
 
@@ -173,6 +178,11 @@
         <copy file="${lib}/jsock-20190503.jar" todir="${dir_nclw}/lib/"/>
         <copy file="${lib}/log4j-api-2.11.1.jar" todir="${dir_nclw}/lib/"/>
         <copy file="${lib}/log4j-core-2.11.1.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/oshi-core-4.4.2.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jna-5.5.0.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/jna-platform-5.5.0.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="${lib}/slf4j-api-1.7.30.jar" todir="${dir_nclw}/lib/"/>
+
         <copy file="nclw/job_ncl.json" todir="${dir_nclw}/nclw"/>
         <copy file="nclw/env.json" todir="${dir_nclw}/nclw"/>
         <copy file="nclw/env_ncl.json" todir="${dir_nclw}/nclw"/>
@@ -188,8 +198,12 @@
         <copy file="nclw_moduleup.sh" todir="${dir_nclw}"/>
         <copy file="nclw_startworker.sh" todir="${dir_nclw}"/>
         <copy file="nclw_stopworker.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_autodelegator.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_autoprocess.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_autostartworker.sh" todir="${dir_nclw}"/>
         <copy file="ccn_consumer.sh" todir="${dir_nclw}"/>
         <copy file="nclw_nfd.sh" todir="${dir_nclw}"/>
+        <copy file="nclw_nfdout.sh" todir="${dir_nclw}"/>
         <copy file="nclw_nfdelegator.sh" todir="${dir_nclw}"/>
         <copy file="nclw_nfdstartworker.sh" todir="${dir_nclw}"/>
         <copy file="nclw_nfdcollectlog.sh" todir="${dir_nclw}"/>
@@ -201,6 +215,7 @@
         <copy file="${lib}/jndn-management-master-1.2.2.jar" todir="${dir_nclw}/lib/"/>
         <copy file="${lib}/jndn-forwarder-ncl.jar" todir="${dir_nclw}/lib/"/>
         <copy file="${lib}/jndn-utils.jar" todir="${dir_nclw}/lib/"/>
+        <copy file="schedgen.sh" todir="${dir_nclw}"/>
 
     </target>
 
