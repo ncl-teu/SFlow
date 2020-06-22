@@ -26,7 +26,7 @@ public class SFCSchedJsonGenerator {
         String envJsonFile = args[0];
         String jobJsonFile = args[1];
         String prop = args[2];
-        String hostFile = args[3];
+        String writePath = args[3];
 
         if(envJsonFile.isEmpty() || jobJsonFile.isEmpty()||prop.isEmpty()){
             System.out.println("Please input env. json file, job json file, and property file.");
@@ -102,7 +102,7 @@ public class SFCSchedJsonGenerator {
 
         }
         //次に,sfcオブジェクトをjsonファイルへ書き出す．
-        SchedGenerator gen = new SchedGenerator(jobLoader, sfc, "SFCRet.json",env);
+        SchedGenerator gen = new SchedGenerator(jobLoader, sfc, writePath,env);
 
         gen.process();
 
