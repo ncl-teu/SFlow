@@ -23,6 +23,7 @@ import com.intel.jndn.forwarder.api.callbacks.OnFailed;
 import com.intel.jndn.forwarder.api.callbacks.OnInterestReceived;
 import com.intel.jnfd.deamon.face.ParseFaceUriException;
 import org.ncl.workflow.ccn.core.NclwFaceManager;
+import org.ncl.workflow.ccn.core.NclwNFDMgr;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -247,6 +248,50 @@ public final class TcpFactory implements ProtocolFactory {
 	@Override
 	public FaceUri defaultLocalUri() {
 		return DEFAULT_URI;
+	}
+
+	public OnCompleted<Channel> getOnChannelCreated() {
+		return onChannelCreated;
+	}
+
+	public OnFailed getOnChannelCreationFailed() {
+		return onChannelCreationFailed;
+	}
+
+	public OnCompleted<Channel> getOnChannelDestroyed() {
+		return onChannelDestroyed;
+	}
+
+	public OnFailed getOnChannelDestructionFailed() {
+		return onChannelDestructionFailed;
+	}
+
+	public OnCompleted<Face> getOnFaceCreated() {
+		return onFaceCreated;
+	}
+
+	public OnFailed getOnFaceCreationFailed() {
+		return onFaceCreationFailed;
+	}
+
+	public OnCompleted<Face> getOnFaceDestroyed() {
+		return onFaceDestroyed;
+	}
+
+	public OnFailed getOnFaceDestructionFailed() {
+		return onFaceDestructionFailed;
+	}
+
+	public OnCompleted<Face> getOnFaceDestroyedByPeer() {
+		return onFaceDestroyedByPeer;
+	}
+
+	public OnDataReceived getOnDataReceived() {
+		return onDataReceived;
+	}
+
+	public OnInterestReceived getOnInterestReceived() {
+		return onInterestReceived;
 	}
 
 	// All the callbacks

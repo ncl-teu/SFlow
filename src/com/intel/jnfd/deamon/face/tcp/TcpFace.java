@@ -22,7 +22,9 @@ import com.intel.jnfd.deamon.face.FaceUri;
 import com.intel.jnfd.util.NfdCommon;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.util.Queue;
@@ -42,6 +44,7 @@ import net.named_data.jndn.encoding.tlv.TlvDecoder;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.Common;
 import org.ncl.workflow.ccn.core.NclwNFDMgr;
+import org.ncl.workflow.util.NCLWUtil;
 
 /**
  *
@@ -63,9 +66,11 @@ public class TcpFace extends AbstractFace implements Serializable {
 		this.onFaceDestroyedByPeer = onFaceDestroyedByPeer;
 		this.onInterestReceived = onInterestReceived;
 		this.onDataReceived = onDataReceived;
-		this.elementReader = new ElementReader(new Deserializer(onDataReceived, onInterestReceived));
+		Deserializer  des = new Deserializer(onDataReceived, onInterestReceived);
+		this.elementReader = new ElementReader(des);
 
 		ReceiveHandler receiveHandler = new ReceiveHandler();
+		receiveHandler.setParentFace(this);
 
 		ReceiveAttachment newAttachment = new ReceiveAttachment();
 		receiveQueue.add(newAttachment);
@@ -75,21 +80,39 @@ public class TcpFace extends AbstractFace implements Serializable {
 	}
 
 	public TcpFace(FaceUri localUri, FaceUri remoteUri, AsynchronousSocketChannel asynchronousSocketChannel){
-		super(localUri, remoteUri, false, true);
+		super(localUri, remoteUri, false, false);
 		this.asynchronousSocketChannel = asynchronousSocketChannel;
 		this.onFaceDestroyedByPeer =null;
 		this.onInterestReceived = null;
 		this.onDataReceived = null;
-		this.elementReader = new ElementReader(new Deserializer(onDataReceived, onInterestReceived));
+		/*
+		this.onFaceDestroyedByPeer =NclwNFDMgr.getIns().getMgr().onFaceDestroyedByPeer;
+		this.onInterestReceived = NclwNFDMgr.getIns().getMgr().onInterestReceived;
+		this.onDataReceived = NclwNFDMgr.getIns().getMgr().onDataReceived;
+
+		 */
+		//this.elementReader = new ElementReader(new Deserializer(onDataReceived, onInterestReceived));
+		Deserializer  des = new Deserializer(onDataReceived, onInterestReceived);
+		this.elementReader = new ElementReader(des);
 		ReceiveHandler receiveHandler = new ReceiveHandler();
-////Added////
+		receiveHandler.setParentFace(this);
+
+////Added by Kanemitsu////
 		ReceiveAttachment newAttachment = new ReceiveAttachment();
 		receiveQueue.add(newAttachment);
 		//this.asynchronousSocketChannel.read(newAttachment.inputBuffer, newAttachment, receiveHandler);
 		NclwNFDMgr.getIns().setFace(this);
+////Added by Kanemitsu////
 
-		////Added////
+	}
 
+
+	public AsynchronousSocketChannel getAsynchronousSocketChannel() {
+		return asynchronousSocketChannel;
+	}
+
+	public void setAsynchronousSocketChannel(AsynchronousSocketChannel asynchronousSocketChannel) {
+		this.asynchronousSocketChannel = asynchronousSocketChannel;
 	}
 
 	@Override
@@ -97,7 +120,7 @@ public class TcpFace extends AbstractFace implements Serializable {
 		boolean wasQueueEmpty = sendQueue.isEmpty();
 		sendQueue.add(interest.wireEncode(wireFormat));
 		if (wasQueueEmpty) {
-			sendFromQueue();
+				sendFromQueue();
 		}
 	}
 
@@ -130,29 +153,51 @@ public class TcpFace extends AbstractFace implements Serializable {
 	protected synchronized void sendFromQueue() {
 		if (!sendQueue.isEmpty()) {
 			try{
-				//System.out.println("***130 SENT info. /LocalAddr:"+asynchronousSocketChannel.getLocalAddress()+"/RemodeAddr:"+asynchronousSocketChannel.getRemoteAddress());
-
+				System.out.println("Remote ADDR:"+asynchronousSocketChannel.getRemoteAddress().toString());
 			}catch(Exception e){
 				e.printStackTrace();
 			}
 
-			asynchronousSocketChannel.write(sendQueue.poll().buf(), null, sendHandler);
+
+			try{
+				ByteBuffer  bdata = sendQueue.poll().buf();
+
+				asynchronousSocketChannel.write(bdata, null, sendHandler);
+				//TcpChannel channel = NclwNFDMgr.getIns().getMgr().getPfactory().getChannelMap().get(NCLWUtil.NFD_PORT);
+				//channel.acceptAgain();
+
+			}catch(Exception e){
+				StackTraceElement[] elem = e.getStackTrace();
+				for(int i=0;i<elem.length;i++){
+					System.out.println(elem[i]);
+				}
+			}
+
 		}
 	}
 
-	protected void receiveFromQueue() {
+	protected synchronized void receiveFromQueue() {
 		while (!receiveQueue.isEmpty()) {
 			logger.info("try to process the incoming queue");
-			ReceiveAttachment head = receiveQueue.peek();
+			System.out.println("***Received NANIKA***");
+			//ReceiveAttachment head = receiveQueue.peek();
+			ReceiveAttachment head = receiveQueue.poll();
+
 			if (head.haveReadFromChannle) {
-				receiveQueue.poll();
+				System.out.println("****NANIKA179");
+				////receiveQueue.poll();
 				logger.info("decode packet");
 				try {
-					elementReader.onReceivedData(head.inputBuffer);
+
+					System.out.println("****NANIKA183***");
+					elementReader.onReceivedData(head.inputBuffer.slice());
 				} catch (EncodingException ex) {
+					System.out.println("**Encoding Exception ");
+
 					logger.log(Level.WARNING, "Failed to decode bytes on face.", ex);
 				}
 			} else {
+				System.out.println("**ReceiveQueue NG");
 				return;
 			}
 		}
@@ -163,6 +208,7 @@ public class TcpFace extends AbstractFace implements Serializable {
 		if (!asynchronousSocketChannel.isOpen()) {
 			return;
 		}
+
 		asynchronousSocketChannel.close();
 		sendQueue.clear();
 		receiveQueue.clear();
@@ -180,18 +226,33 @@ public class TcpFace extends AbstractFace implements Serializable {
 	 */
 	private class ReceiveHandler implements CompletionHandler<Integer, ReceiveAttachment> {
 
+		private TcpFace parentFace;
+
+		public TcpFace getParentFace() {
+			return parentFace;
+		}
+
+		public void setParentFace(TcpFace parentFace) {
+			this.parentFace = parentFace;
+		}
+
 		@Override
 		public void completed(Integer result, ReceiveAttachment attachment) {
+			System.out.println("******Recv Handler_Completed with Result"+result +"@"+ this.parentFace.getRemoteUri().getInet().getHostAddress() );
+//System.out.println("MAX Packet SIZE: "+Common.MAX_NDN_PACKET_SIZE);
+
 			if (result != -1) {
-				logger.info("receive something");
 				attachment.inputBuffer.flip();
 				attachment.haveReadFromChannle = true;
 				receiveFromQueue();
 				ReceiveAttachment newAttachment = new ReceiveAttachment();
 				receiveQueue.add(newAttachment);
 				asynchronousSocketChannel.read(newAttachment.inputBuffer, newAttachment, this);
+
 			} else {
 				logger.info("NO DATA RECEIVED...");
+				System.out.println("***No Data Received***");
+
 				onFaceDestroyedByPeer.onCompleted((Face) TcpFace.this);
 			}
 		}
@@ -199,6 +260,7 @@ public class TcpFace extends AbstractFace implements Serializable {
 		@Override
 		public void failed(Throwable exc, ReceiveAttachment attachment) {
 			logger.log(Level.WARNING, "Failed to receive bytes on face.");
+			System.out.println("***Failed to receive bytes on face.");
 		}
 	}
 
@@ -215,27 +277,26 @@ public class TcpFace extends AbstractFace implements Serializable {
 			this.onInterestReceived = onInterestReceived;
 		}
 
+
+
 		@Override
 		public final void onReceivedElement(ByteBuffer element) throws EncodingException {
-			logger.info("onReceivedElement is called");
+			//logger.info("onReceivedElement is called");
 			if (element.get(0) == Tlv.Interest || element.get(0) == Tlv.Data) {
 				logger.info("receive Data or Interest packet");
 				TlvDecoder decoder = new TlvDecoder(element);
 				if (decoder.peekType(Tlv.Interest, element.remaining())) {
+					System.out.println("*********Received Interest***********");
+
 					logger.info("receive Interest packet");
 					Interest interest = new Interest();
-					interest.wireDecode(element, TlvWireFormat.get());
-System.out.println("**Interest COME!!@TcpFace");
-					//FaceMgrSingleton.getInst().getFw().onInterest(interest, TcpFace.this);
-					//FaceMgrSingleton.getInst().getMgr().processInterest(interest, (TcpFace)FaceMgrSingleton.getInst().getFace());
-					//this.onInterestReceived.onInterest(interest, TcpFace.this);
-
-					this.onInterestReceived.onInterest(interest, NclwNFDMgr.getIns().getFace());
-
-
+					interest.wireDecode(element.slice(), TlvWireFormat.get());
+System.out.println("***INTEREST ARRIVED@"+TcpFace.this.getLocalUri().getInet().getHostAddress());
+System.out.println("***LOCAL:"+TcpFace.this.getLocalUri().getInet().getHostAddress() + "/REMOTE:"+TcpFace.this.getRemoteUri().getInet().getHostAddress());
+					this.onInterestReceived.onInterest(interest, TcpFace.this);
 				} else if (decoder.peekType(Tlv.Data, element.remaining())) {
 					//logger.info("receive Data packet");
-System.out.println("**DATA COME!!@TcpFace**");
+System.out.println("***DATA ARRIVED@"+TcpFace.this.getLocalUri().getInet().getHostAddress());
 					Data data = new Data();
 					data.wireDecode(element, TlvWireFormat.get());
 					onDataReceived.onData(data, TcpFace.this);
@@ -253,15 +314,14 @@ System.out.println("**DATA COME!!@TcpFace**");
 
 		@Override
 		public void completed(Integer result, Void attachment) {
+			System.out.println("***Send Handler is called***");
 			if (result != -1) {
-				logger.log(Level.INFO, "bytes sent: {0}", result);
+				//logger.log(Level.INFO, "bytes sent: {0}", result);
 				if (!sendQueue.isEmpty()) {
 					sendFromQueue();
-					System.out.println("***251 OK DATE  SENT.");
-
 				}
 			} else {
-				System.out.println("****253: NO DATE SENT...");
+				System.out.println("****NO DATE SENT...");
 				logger.info("NO DATA SENT...");
 				onFaceDestroyedByPeer.onCompleted((Face) this);
 			}
@@ -272,13 +332,20 @@ System.out.println("**DATA COME!!@TcpFace**");
 			//TODO: add actions in the future;
 			//logger.log(Level.WARNING, "Failed to send bytes on face.");
 			System.out.println("****SENDING FAILED...****");
+			System.out.println(exc.getMessage());
+			StackTraceElement[]  elem = exc.getStackTrace();
+			for(int i=0;i<elem.length;i++){
+				System.out.println(elem[i].toString());
+			}
+			exc.printStackTrace();
+
 		}
 
 	}
 
 	private static final Logger logger = Logger.getLogger(TcpFace.class.getName());
 	protected AsynchronousSocketChannel asynchronousSocketChannel;
-//    private final ByteBuffer inputBuffer = ByteBuffer.allocate(Common.MAX_NDN_PACKET_SIZE);
+    private final ByteBuffer inputBuffer = ByteBuffer.allocate(Common.MAX_NDN_PACKET_SIZE);
 	private final Queue<Blob> sendQueue = new ConcurrentLinkedQueue<>();
 	private final Queue<ReceiveAttachment> receiveQueue = new ConcurrentLinkedQueue<>();
 	private final ElementReader elementReader;
@@ -287,4 +354,14 @@ System.out.println("**DATA COME!!@TcpFace**");
 	private final OnDataReceived onDataReceived;
 	private final WireFormat wireFormat = new TlvWireFormat();
 	private final CompletionHandler<Integer, Void> sendHandler = new SendHandler();
+	//vm prefix
+	protected String nodePrefix;
+
+	public String getNodePrefix() {
+		return nodePrefix;
+	}
+
+	public void setNodePrefix(String nodePrefix) {
+		this.nodePrefix = nodePrefix;
+	}
 }

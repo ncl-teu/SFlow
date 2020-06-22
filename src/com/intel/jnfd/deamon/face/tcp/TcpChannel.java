@@ -21,8 +21,12 @@ import com.intel.jndn.forwarder.api.callbacks.OnFailed;
 import com.intel.jndn.forwarder.api.callbacks.OnInterestReceived;
 import com.intel.jnfd.deamon.face.FaceUri;
 import com.intel.jnfd.deamon.face.ParseFaceUriException;
+import org.ncl.workflow.ccn.core.NclwNFDMgr;
+import org.ncl.workflow.util.NCLWUtil;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
@@ -31,6 +35,7 @@ import java.nio.channels.CompletionHandler;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,7 +109,32 @@ public class TcpChannel extends AbstractChannel {
 		ConnectAttachment connectAttachment = new ConnectAttachment();
 		connectAttachment.onFaceCreated = onFaceCreated;
 		connectAttachment.asynchronousSocketChannel = asynchronousSocket;
+		boolean connected = false;
 		asynchronousSocket.connect(remoteAddr, connectAttachment, new ConnectHandler());
+		/*while(!connected){
+			asynchronousSocket.connect(remoteAddr, connectAttachment, new ConnectHandler());
+
+			try{
+				Thread.sleep(100);
+				SocketAddress sa = asynchronousSocket.getRemoteAddress();
+				if (sa == null) {
+					continue;
+				}else{
+					connected = true;
+
+				}
+				System.out.println("**CONNECT OK@"+remoteAddr);
+
+			}catch(Exception e){
+				//System.out.println("**CONNECT XXXXX@"+remoteAddr);
+				continue;
+			}
+
+
+		}
+
+		 */
+
 	}
 
 	/**
@@ -122,6 +152,16 @@ public class TcpChannel extends AbstractChannel {
 			asynchronousServerSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
 			asynchronousServerSocket.bind(mAddr);
 			asynchronousServerSocket.accept(null, new AcceptHandler());
+		}
+	}
+
+	public void acceptAgain(){
+		try{
+			if(!this.asynchronousServerSocket.isOpen()) {
+				this.asynchronousServerSocket.accept(null, new AcceptHandler());
+			}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 	}
 
@@ -242,8 +282,38 @@ public class TcpChannel extends AbstractChannel {
 		public void completed(AsynchronousSocketChannel result,
 				AcceptAttachment attachment) {
 			// accept the next connection
-			asynchronousServerSocket.accept(attachment, this);
+			/*if(NCLWUtil.nfd_strategy == 2){
+				try{
+					if(result.getRemoteAddress().toString().indexOf(NclwNFDMgr.getIns().getOwnIPAddr())>0){
+						return;
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+
+
+			 */
+
 			try {
+				//asynchronousServerSocket.bind(new InetSocketAddress("localhost", NCLWUtil.NFD_PORT));
+				//asynchronousServerSocket.bind(new InetSocketAddress( NCLWUtil.NFD_PORT));
+
+				asynchronousServerSocket.accept(attachment, this);
+				System.out.println("***Wait for Next Connection@"+result.getRemoteAddress().toString());
+				/*if(NCLWUtil.nfd_strategy == 2){
+					try{
+						if(result.getRemoteAddress().toString().indexOf(NclwNFDMgr.getIns().getOwnIPAddr())>0){
+							return;
+						}
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+				}
+
+				 */
+
+
 				// handle this connection
 				createFace(result, onFaceCreated);
 			} catch (IOException ex) {
@@ -260,7 +330,7 @@ public class TcpChannel extends AbstractChannel {
 
 	}
 
-	private class ConnectAttachment {
+	public  class ConnectAttachment {
 
 		public OnCompleted<Face> onFaceCreated;
 		public AsynchronousSocketChannel asynchronousSocketChannel;
@@ -273,7 +343,7 @@ public class TcpChannel extends AbstractChannel {
 			try {
 				createFace(attachment.asynchronousSocketChannel, attachment.onFaceCreated);
 			} catch (IOException ex) {
-				logger.log(Level.SEVERE, null, ex);
+				//logger.log(Level.SEVERE, null, ex);
 				onFaceCreationFailed.onFailed(ex);
 			}
 		}
@@ -329,6 +399,7 @@ public class TcpChannel extends AbstractChannel {
 			faceMap.put(remoteSocket, face);
 		} else {
 			try {
+				System.out.println("***Face Closed***");
 				// we already have a face for this endpoint, just reuse it
 				asynchronousSocketChannel.close();
 			} catch (IOException ex) {
@@ -381,6 +452,34 @@ public class TcpChannel extends AbstractChannel {
 		this.asynchronousChannelGroup = asynchronousChannelGroup;
 	}
 
+
+	public OnCompleted<Face> getOnFaceCreated() {
+		return onFaceCreated;
+	}
+
+	public OnFailed getOnFaceCreationFailed() {
+		return onFaceCreationFailed;
+	}
+
+	public OnCompleted<Face> getOnFaceDestroyed() {
+		return onFaceDestroyed;
+	}
+
+	public OnFailed getOnFaceDestructionFailed() {
+		return onFaceDestructionFailed;
+	}
+
+	public OnCompleted<Face> getOnFaceDestroyedByPeer() {
+		return onFaceDestroyedByPeer;
+	}
+
+	public OnInterestReceived getOnInterestReceived() {
+		return onInterestReceived;
+	}
+
+	public OnDataReceived getOnDataReceived() {
+		return onDataReceived;
+	}
 
 
 
