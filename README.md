@@ -2,9 +2,9 @@
 ## Summary of SFlow
 - SFlow supports task/function scheduling in a workflow by allocating each function to a vCPU/CPU core for each physical CPU. 
 - Several task scheduling algorithms are included in SFlow, and each of them can be set by the configuration file. 
-- ファンクション=Dockerコンテナであり，まずはホスト内にバッチ処理がインストールされているかチェックします．インストール済みであればそのまま実行し，されていなければ指定のDockerリポジトリからDockerイメージをロードしてから実行します．
-- チェイニング方式: IPベースによるチェイニングに加えて，ICNによるチェイニングが可能です．ICNによって一度実行したファンクションの結果データを再実行することなく取得でき，処理時間の節約になります．
-## 構成
+- A function is a docker container in SFlow. When a function is ready for execution, SFlow check whether the batch program is installed or not on the node. If so, the function is processed by the system call, otherwise, it attempts to pull the docker image from the docker repository and load it before the execution. 
+- Chaining scheme: IP-based chaining and ICN-based chaining are supported in SFlow. If ICN-based chaining is enabled, the resultant data is cached on the node, thereby the cache is returned to the successor functions if the interest packet is arrived without execution. 
+## System structure
 想定する環境ですが，↓の図のように，
 - **Delegator**: ワークフロー情報(JSONファイル），ワーカー情報（JSONファイル），ジョブ情報（JSONファイル）を保持して，スケジューリングする．
 - **ファイルサーバ**: ジョブ実行に必要なファイルを保持し，FTP経由で提供する
