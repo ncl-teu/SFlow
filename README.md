@@ -1,3 +1,4 @@
+Readme(japanese) is [here](https://github.com/ncl-teu/SFlow/blob/master/README_JP.md): 
 # SFlow: Workflow-engine for multiple communication schemes with scheduling algorithms. 
 ## Summary of SFlow
 - SFlow supports task/function scheduling in a workflow by allocating each function to a vCPU/CPU core for each physical CPU. 
