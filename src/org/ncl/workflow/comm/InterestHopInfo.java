@@ -27,7 +27,7 @@ public class InterestHopInfo implements Serializable {
         Iterator<String> ipIte = this.ipList.iterator();
         while(ipIte.hasNext()){
             String ipAddr = ipIte.next();
-            if(ipAddr == ip){
+            if(ipAddr.equals(ip)){
                 ret = true;
                 break;
             }

@@ -6,6 +6,7 @@ import org.ncl.workflow.comm.SendThread;
 import org.ncl.workflow.comm.WorkflowJob;
 import org.ncl.workflow.engine.NCLWEngine;
 import org.ncl.workflow.engine.Task;
+import org.ncl.workflow.logger.NclwLog;
 import org.ncl.workflow.util.NCLWUtil;
 
 import java.io.Serializable;
@@ -89,13 +90,17 @@ public class NFDTaskEngine implements Serializable, Runnable {
     }
 
 
+
+
     /**
      * Dataパケット送受信用スレッド
      */
     public void startSendRecvThreads(){
         try{
             ServerSocket listen_socket = new ServerSocket(NCLWUtil.port);
-            this.exec.submit(new NclwNFDSendThread());
+            //this.exec.submit(new NclwNFDSendThread());
+            NclwLog.getIns().log("Listening DATA  at Port:"+NCLWUtil.port);
+
             while(true){
                 Thread.sleep(100);
                 Socket client = listen_socket.accept();

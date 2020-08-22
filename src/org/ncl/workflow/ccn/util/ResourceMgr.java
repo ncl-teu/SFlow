@@ -81,7 +81,7 @@ public class ResourceMgr implements Serializable {
             long hostID = this.createID(str_hostID);
             //DCのID: IPのデフォルトゲートウェイアドレス
             long cloudID = this.createID(info.getOperatingSystem().getNetworkParams().getIpv4DefaultGateway());
-System.out.println("DC: "+cloudID + "/HostID:"+hostID);
+//System.out.println("DC: "+cloudID + "/HostID:"+hostID);
             //これでクラウドを作る．
             Cloud dc = new Cloud();
             dc.setId(cloudID);
@@ -94,15 +94,15 @@ System.out.println("DC: "+cloudID + "/HostID:"+hostID);
             //定義済みNWアドレスを2進に変換する．
             byte[] bIP = InetAddress.getByName(org_nwAddr).getAddress();
             String ip_binary = new BigInteger(1, bIP).toString(2);
-            System.out.println(info.getOperatingSystem().getNetworkParams().getIpv4DefaultGateway());
+          // System.out.println(info.getOperatingSystem().getNetworkParams().getIpv4DefaultGateway());
 
             for(int i=0;i<ifs.length;i++){
                 if(ifs[i].getIPv4addr().length>0){
-                    System.out.println(i+":"+ifs[i].getIPv4addr()[0] +"/"+ifs[i].getName() + "/"+ifs[i].getSpeed());
+                   // System.out.println(i+":"+ifs[i].getIPv4addr()[0] +"/"+ifs[i].getName() + "/"+ifs[i].getSpeed());
 
                     byte a = ifs[i].getSubnetMasks()[0].byteValue();
                     String networkAddress = this.calcNetworkAddress(ifs[i].getIPv4addr()[0], ifs[i].getSubnetMasks()[0]);
-                    System.out.println("MAC:"+ifs[i].getMacaddr() + "BW:"+ifs[i].getSpeed()/(1000000*8));
+                    //System.out.println("MAC:"+ifs[i].getMacaddr() + "BW:"+ifs[i].getSpeed()/(1000000*8));
 
                     if(ip_binary.equals(networkAddress)){
                         //指定のネットワークに一致すれば，その帯域幅を取得する．
@@ -167,7 +167,7 @@ System.out.println("DC: "+cloudID + "/HostID:"+hostID);
                 //定義済みNWアドレスを2進に変換する．
                 byte[] bIP = InetAddress.getByName(org_nwAddr).getAddress();
                 String ip_binary = new BigInteger(1, bIP).toString(2);
-                System.out.println(info.getOperatingSystem().getNetworkParams().getIpv4DefaultGateway());
+                //System.out.println(info.getOperatingSystem().getNetworkParams().getIpv4DefaultGateway());
 
                 for(int i=0;i<ifs.length;i++){
                     if(ifs[i].getIPv4addr().length>0){

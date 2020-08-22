@@ -6,6 +6,7 @@ import org.ncl.workflow.ccn.autoicnsfc.AutoICNSFCScheduling;
 import org.ncl.workflow.ccn.sfc.process.NclwNFD;
 import org.ncl.workflow.ccn.util.ResourceMgr;
 import org.ncl.workflow.delegator.EnvJsonLoader;
+import org.ncl.workflow.logger.NclwLog;
 
 /**
  * Created by Hidehiro Kanemitsu on 2020/03/04
@@ -23,10 +24,11 @@ public class AutoICNSFCProcess {
             String propName = args[1];
             String hostFile = args[2];
             String envJsonFile = args[3];
-
+            NclwLog.getIns().log("---AutoICNSFCProcess START----");
             //とりあえず，設定ファイルから環境情報を読み込む．
             EnvJsonLoader envLoader = new EnvJsonLoader();
             NFVEnvironment env = envLoader.loadEnv(envJsonFile);
+            NclwLog.getIns().log(envJsonFile + " is loaded successfully.");
 
             //環境情報をセットする．
             AutoICNSFCScheduling autoICN = new AutoICNSFCScheduling(env);

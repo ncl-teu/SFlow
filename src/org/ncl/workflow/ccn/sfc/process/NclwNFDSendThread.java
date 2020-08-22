@@ -20,6 +20,7 @@ import org.ncl.workflow.comm.NCLWData;
 import org.ncl.workflow.comm.SendThread;
 import org.ncl.workflow.comm.WorkflowJob;
 import org.ncl.workflow.engine.Task;
+import org.ncl.workflow.logger.NclwLog;
 import org.ncl.workflow.util.NCLWUtil;
 
 import java.io.*;
@@ -87,10 +88,12 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
 
     @Override
     public void run() {
+        NclwLog.getIns().log("----NclwNFDSendThread START---");
         try {
             while (true) {
                 if (!this.interestDataQueue.isEmpty()) {
                     NCLWData data = this.interestDataQueue.poll();
+                    NclwLog.getIns().log("|InterestQueue| > 0.");
                     this.sendInterestProcess(data);
                 }
 
@@ -185,7 +188,7 @@ public class NclwNFDSendThread extends SendThread implements OnData, OnInterestC
             FibEntry fibE = NclwNFDMgr.getIns().getFib().findExactMatch(interest.getName());
             List<FibNextHop> nList  = fibE.getNextHopList();
             Iterator<FibNextHop> fIte = nList.iterator();
-            long minCost = 10000000;
+            long minCost = Long.MAX_VALUE;
             TcpFace oFace = null;
             //Fibエントリのfaceのうち最低コストのFaceを決めるためのループ
             while(fIte.hasNext()){

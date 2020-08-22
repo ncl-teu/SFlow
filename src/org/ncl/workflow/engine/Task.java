@@ -14,6 +14,7 @@ import net.gripps.clustering.common.aplmodel.CustomIDSet;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
+import org.ncl.workflow.ccn.autoicnsfc.AutoICNSFCMgr;
 import org.ncl.workflow.comm.*;
 import org.ncl.workflow.util.NCLWUtil;
 
@@ -631,7 +632,12 @@ System.out.println("ServerPath:"+serverPath);
         this.setStarted(true);
         int inDegree = this.vnf.getDpredList().size();
         //System.out.println("InDegree:"+ inDegree);
+        if(NCLWUtil.nfd_strategy == 2){
+           if( this.sfc ==null) {
+               AutoICNSFCMgr.getIns().getSched().getSfc();
+           }
 
+        }
         try {
             while (true) {
                 Thread.sleep(100);
@@ -778,6 +784,15 @@ System.out.println("Exec RESULT:"+retBuf.toString());
                                     VNF sucVNF = this.sfc.findVNFByLastID(targetID);
                                     String sucVCPUID = sucVNF.getvCPUID();
                                     VM host = NCLWUtil.findVM(this.env, sucVCPUID);
+                                    if(this.env == null){
+                                        System.out.println("ENV is null");
+                                    }
+                                    if(sucVCPUID == null){
+                                        System.out.println("vcpuid is null");
+                                    }
+                                    if(this.sfc== null){
+                                        System.out.println("sfc is null");
+                                    }
                                     System.out.println("***FSI.getpath:"+fsi.getPath());
                                     System.out.println("***FSI.getWPath:"+fsi.getWritePath());
                                     System.out.println("***takID:"+this.getTaskID());

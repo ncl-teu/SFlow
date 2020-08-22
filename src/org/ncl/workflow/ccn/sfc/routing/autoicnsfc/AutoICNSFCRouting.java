@@ -18,6 +18,7 @@ import org.ncl.workflow.ccn.autoicnsfc.AutoICNSFCScheduling;
 import org.ncl.workflow.ccn.core.NclwNFDMgr;
 import org.ncl.workflow.ccn.sfc.routing.BaseNFDRouting;
 import org.ncl.workflow.ccn.util.ResourceMgr;
+import org.ncl.workflow.logger.NclwLog;
 import org.ncl.workflow.util.NCLWUtil;
 
 public class AutoICNSFCRouting extends BaseNFDRouting {
@@ -46,7 +47,7 @@ public class AutoICNSFCRouting extends BaseNFDRouting {
             if (maxFaces >= vmLen) {
             }
 
-            System.out.println("VM #" + env.getGlobal_vmMap().size());
+        NclwLog.getIns().log("# of nodes for FIB: "+ vmLen);
 
             while(vIte.hasNext()) {
                 VM vm = (VM)vIte.next();
@@ -54,16 +55,24 @@ public class AutoICNSFCRouting extends BaseNFDRouting {
                     Name name = new Name(NCLWUtil.NCLW_PREFIX);
                     boolean ret = false;
                     while(!ret){
-                        TcpFace face = NclwNFDMgr.getIns().getChannel().getFace(vm.getIpAddr(), NCLWUtil.NFD_PORT);
-                        if(face == null){
-                            //TcpFace oFace = NclwNFDMgr.getIns().createFace(vm.getIpAddr(), ownIP);
+                        if(NCLWUtil.ccn_comm_mode == 0){
+                            TcpFace face = NclwNFDMgr.getIns().getChannel().getFace(vm.getIpAddr(), NCLWUtil.NFD_PORT);
+                            if(face == null){
+                                //TcpFace oFace = NclwNFDMgr.getIns().createFace(vm.getIpAddr(), ownIP);
 
-                            NclwNFDMgr.getIns().getMgr().getPfactory().createFace(new FaceUri("tcp4", vm.getIpAddr(), NCLWUtil.NFD_PORT));
-                            Thread.sleep(300);
+                                NclwNFDMgr.getIns().getMgr().getPfactory().createFace(new FaceUri("tcp4", vm.getIpAddr(), NCLWUtil.NFD_PORT));
+                                Thread.sleep(300);
+                            }else{
+                                ret = true;
+                                break;
+                            }
                         }else{
+                            TcpFace face = NclwNFDMgr.getIns().getFace(vm.getIpAddr());
                             ret = true;
                             break;
+                            //Thread.sleep(30);
                         }
+
 
                     }
                    // TcpFace face = NclwNFDMgr.getIns().createFace(vm.getIpAddr(), ownIP);
@@ -72,6 +81,8 @@ public class AutoICNSFCRouting extends BaseNFDRouting {
                     //NclwNFDMgr.getIns().getFib().insert(name, (TcpFace)onFace, 1);
                // }
             }
+            NclwLog.getIns().log("FIB Configuration FINISHED");
+
         } catch (Exception var11) {
             var11.printStackTrace();
         }

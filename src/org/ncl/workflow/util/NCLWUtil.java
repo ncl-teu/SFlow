@@ -85,6 +85,8 @@ public class NCLWUtil {
 
     public static long ccn_connection_timeout;
 
+    public static int ccn_comm_mode;
+
 
     /**
      * Constructor
@@ -156,7 +158,7 @@ public class NCLWUtil {
 
             NCLWUtil.ccn_connection_timeout = Long.valueOf(NCLWUtil.prop.getProperty("ccn_connection_timeout"));
 
-
+            NCLWUtil.ccn_comm_mode = Integer.valueOf(NCLWUtil.prop.getProperty("ccn_comm_mode"));
 
 
 

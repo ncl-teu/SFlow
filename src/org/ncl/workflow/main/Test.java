@@ -28,4 +28,8 @@ public class Test {
             System.out.println( ((int)(value * 1000) / 10.0));
         }
 
+        public void test(){
+            System.out.println("test");
+        }
+
 }

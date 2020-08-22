@@ -3,6 +3,7 @@ package org.ncl.workflow.ccn.sfc.process;
 import com.intel.jndn.forwarder.api.Face;
 import com.intel.jndn.forwarder.api.Strategy;
 import com.intel.jndn.forwarder.impl.RegisterPrefixCommand;
+import com.intel.jnfd.deamon.face.FaceUri;
 import com.intel.jnfd.deamon.face.tcp.TcpFace;
 import com.intel.jnfd.deamon.fw.BestRouteStrategy2;
 import com.intel.jnfd.deamon.fw.FaceTable;
@@ -29,10 +30,12 @@ import net.named_data.jndn.Name;
 import net.named_data.jndn.lp.LpPacket;
 import net.named_data.jndn.util.Blob;
 import org.ncl.workflow.ccn.core.NclwFWPipeline;
+import org.ncl.workflow.ccn.core.NclwInterest;
 import org.ncl.workflow.ccn.core.NclwNFDMgr;
 import org.ncl.workflow.comm.NCLWData;
 import org.ncl.workflow.comm.WorkflowJob;
 import org.ncl.workflow.engine.Task;
+import org.ncl.workflow.logger.NclwLog;
 import org.ncl.workflow.util.NCLWUtil;
 
 import java.io.*;
@@ -58,13 +61,11 @@ import java.util.concurrent.ScheduledExecutorService;
      * @param interest
      */
     public  void onIncomingInterest(Face inFace, Interest interest) {
-        System.out.println("****INCOMMINGINTEREST:"+"Local:"+inFace.getLocalUri().getInet().getHostAddress() + "/Remote:"+inFace.getRemoteUri().getInet().getHostAddress());
-
+        NclwLog.getIns().log("-----onIncomingInterest START from "+inFace.getRemoteUri().getInet().getHostAddress());
 
         NCLWData data = NclwNFDMgr.getIns().fetchNCLWData(interest);
 
         if(interest.getApplicationParameters().isNull()){
-            System.out.println("Data is NULL!");
         }else{
             //System.out.println("Param: "+ interest.getApplicationParameters().toString());
         }
@@ -86,11 +87,10 @@ import java.util.concurrent.ScheduledExecutorService;
         // PIT insert
 
         PitEntry pitEntry = pit.insert(interest).getFirst();
-        System.out.println("****PIT ADD:"+pitEntry.getName());
+        NclwLog.getIns().log("PIT Add:"+pitEntry.getName());
         Iterator<PitInRecord> pIte = pitEntry.getInRecords().iterator();
         while(pIte.hasNext()){
             PitInRecord p = pIte.next();
-            System.out.println("***Remote:"+p.getFace().getRemoteUri().getInet().getHostAddress() + "/Local:"+p.getFace().getLocalUri().getInet().getHostAddress());
         }
        // pitEntry.insertOrUpdateInRecord(inFace, interest);
 
@@ -133,7 +133,7 @@ import java.util.concurrent.ScheduledExecutorService;
     }
 
     public void processPit(Face inFace, Interest interest, PitEntry pitEntry){
-        System.out.println("***PROCESS PIT***");
+        NclwLog.getIns().log("-----ProcessPit START-----");
         // detect duplicate Nonce
         if(inFace != null){
             int dnw = pitEntry.findNonce(interest.getNonce(), inFace);
@@ -142,10 +142,9 @@ import java.util.concurrent.ScheduledExecutorService;
             if (hasDuplicateNonce) {
                 // goto Interest loop pipeline
                 onInterestLoop(inFace, interest, pitEntry);
-                return;
+                //return;
             }
         }
-
 
         // cancel unsatisfy & straggler timer
         cancelUnsatisfyAndStragglerTimer(pitEntry);
@@ -155,7 +154,6 @@ import java.util.concurrent.ScheduledExecutorService;
         ForwardingPipelineSearchCallback callback = new NclwSFCFWPipeline.NclwForwardingPipelineSearchCallback(inFace, pitEntry);
         //ForwardingPipelineSearchCallback callback = this.NclwForwardingPipelineSearchCallback(inFace, pitEntry);
         //Pitに無ければ，CSを見る．
-
         if (inRecords == null || inRecords.isEmpty()) {
             cs.find(interest, callback);
         } else {
@@ -185,14 +183,14 @@ import java.util.concurrent.ScheduledExecutorService;
     public void onOutgoingInterest( NFDTask fromTask, NFDTask toTask, NCLWData data, PitEntry pitEntry, Face outFace, boolean wantNewNonce) {
         //super.onOutgoingInterest(pitEntry, outFace, wantNewNonce);
         if (outFace.getFaceId() == FaceTable.INVALID_FACEID) {
-            System.out.println("***ERROR: Invalid FaceID***");
+            NclwLog.getIns().log("***ERROR: Invalid FaceID***");
             return;
         }
 
 
         // scope control
         if (pitEntry.violatesScope(outFace)) {
-            System.out.println("***ERROR: Invalid Scope***");
+            NclwLog.getIns().log("***ERROR: Invalid Scope***");
 
             return;
         }
@@ -201,7 +199,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
         List<PitInRecord> inRecords = pitEntry.getInRecords();
         if (inRecords == null || inRecords.isEmpty()) {
-            System.out.println("***ERROR: inRecords Empty***");
+            NclwLog.getIns().log("***ERROR: inRecords Empty***");
 
             return;
 
@@ -227,7 +225,7 @@ import java.util.concurrent.ScheduledExecutorService;
             }
         }
         if (pickedInRecord == null) {
-            System.out.println("***ERROR: PickedInRecord Null***");
+            NclwLog.getIns().log("***ERROR: PickedInRecord Null***");
 
             return;
 
@@ -239,7 +237,7 @@ import java.util.concurrent.ScheduledExecutorService;
         Name targetName = NclwNFDMgr.getIns().createPrefix(fromTask, toTask);
         Interest newInterest = new Interest(targetName);
         newInterest.setApplicationParameters(new Blob(data.getAllBytes()));
-
+        NclwLog.getIns().log("INTEREST generated: SF"+toTask.getTaskID() + "->SF" + fromTask.getTaskID()  + "/Prefix:"+targetName.toUri());
 
 
         newInterest.setName(targetName);
@@ -256,16 +254,33 @@ import java.util.concurrent.ScheduledExecutorService;
 
         // insert OutRecord
         pitEntry.insertOrUpdateOutRecord(outFace, interest);
-        System.out.println("size:"+interest.getApplicationParameters().size());
 
-        System.out.println("**InterestGO: TOTask:"+data.getFromTaskID() + "@"+data.getIpAddr()+"/LocalURI:"+outFace.getLocalUri()+"/RemoteURI:"+outFace.getRemoteUri());
-        System.out.println("***SIZE before:"+newInterest.getApplicationParameters().size());
+        NclwLog.getIns().log("-----INTEREST Go: From:"+outFace.getLocalUri()+"To/:"+outFace.getRemoteUri());
 /*
         NclwNFDSendThread sender = new NclwNFDSendThread();
         Thread sendThread = new Thread(sender);
         sendThread.start();
 */
-        outFace.sendInterest(newInterest);
+        if(NCLWUtil.ccn_comm_mode == 0){
+            outFace.sendInterest(newInterest);
+
+        }else{
+            this.sendInterest(newInterest, (TcpFace)outFace);
+        }
+        //NclwNFDMgr.getIns().getChannel().
+
+       /* try{
+
+            String remoteAddr = outFace.getRemoteUri().getInet().getHostAddress();
+            NclwNFDMgr.getIns().getMgr().getPfactory().destroyFace(outFace);
+            //まだ受信まちする．
+            NclwNFDMgr.getIns().getMgr().getPfactory().createFace(new FaceUri("tcp4", remoteAddr, NCLWUtil.NFD_PORT));
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+*/
+
 
 
         //this.sender.getInterestDataQueue().add(data);
@@ -576,7 +591,9 @@ System.out.println("**PIT No Match!!**");
         @Override
         public void onContentStoreMiss(Interest interest) {
             //logger.info("onContentStoreMiss");
+            NclwLog.getIns().log("CS no Hit. Then add the prefix to PIT.");
             // Pitへエントリを追加する．
+            NclwLog.getIns().log("PIT ADD:"+interest.getName().toUri());
             pitEntry.insertOrUpdateInRecord(face, interest);
             if(interest.getName().toUri().startsWith(NCLWUtil.NCLW_PREFIX)){
 
@@ -594,14 +611,18 @@ System.out.println("**PIT No Match!!**");
                 //FIBにも無ければ，エントリを作る．
                 fibEntry = new FibEntry(interest.getName());
             }
+
             ////logger.log(Level.INFO, "find fib{0}", fibEntry.getNextHopList().get(0).getFace().toString());
             // dispatch to strategy
             Strategy effectiveStrategy
                     = strategyChoice.findEffectiveStrategy(pitEntry.getName());
+
             effectiveStrategy.afterReceiveInterest(face, interest, fibEntry,
                     pitEntry);
         }
     }
+
+
 
     /**
      * dataを
@@ -634,6 +655,32 @@ System.out.println("**PIT No Match!!**");
        // outFace.sendData(data);
         this.processOutData(data, (TcpFace)outFace);
     }
+
+    /**
+     * Interest送信プロセスです．
+     * 毎回，socket生成して送信します．
+     * @param interest
+     * @param face
+     */
+    public void sendInterest(Interest interest, TcpFace face) {
+        try {
+            String ipAddr = face.getRemoteUri().getInet().getHostAddress();
+
+            // ソケットの準備
+            Socket socket = new Socket(ipAddr, NCLWUtil.NFD_PORT);
+            ObjectOutputStream outStrm = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inStrm = new ObjectInputStream(socket.getInputStream());
+            NclwInterest newInterest = new NclwInterest(interest.getName().toUri(),
+            interest.getApplicationParameters().getImmutableArray());
+            outStrm.writeObject(newInterest);
+            NclwLog.getIns().log("INTEREST is Sent successfully.");
+
+            outStrm.flush();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
 
     public void processOutData(Data inData, TcpFace face){
 

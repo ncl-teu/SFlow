@@ -22,6 +22,7 @@ import org.ncl.workflow.comm.WorkflowJob;
 import org.ncl.workflow.delegator.EnvJsonLoader;
 import org.ncl.workflow.delegator.WorkflowJsonLoader;
 import org.ncl.workflow.engine.Task;
+import org.ncl.workflow.logger.NclwLog;
 import org.ncl.workflow.util.NCLWUtil;
 import org.ncl.workflow.util.ProcessMgr;
 
@@ -40,24 +41,25 @@ public class AutoICNSFCDelegator {
         String jobJsonFile = args[1];
         String prop = args[2];
         String hostFile = args[3];
-
+        NclwLog.getIns().log("----------AutoICNSFCDelegator process STARTED-----------");
         if(envJsonFile.isEmpty() || jobJsonFile.isEmpty()||prop.isEmpty()){
             System.out.println("Please input env. json file, job json file, and property file.");
             System.exit(-1);
         }
         NCLWUtil.getIns().initialize(prop);
-
+NclwLog.getIns().log(prop+" is loaded successfully.");
         //ResourceMgr.getIns().initResource();
 
 
         EnvJsonLoader envLoader = new EnvJsonLoader();
         //Obtain the env. info.
         NFVEnvironment env = envLoader.loadEnv(envJsonFile);
+        NclwLog.getIns().log(envJsonFile + " is loaded successfully.");
         WorkflowJsonLoader jobLoader = new WorkflowJsonLoader();
         SFC sfc = jobLoader.loadNFDJob(jobJsonFile);
         WorkflowJob job = jobLoader.getJob();
+        NclwLog.getIns().log(jobJsonFile+ " is loaded succesfully.");
         ResourceMgr.getIns().setEnv(env);
-
 
         AutoICNSFCScheduling autoICN = new AutoICNSFCScheduling(env, sfc);
         sfc = autoICN.constructAutoSFC();
@@ -73,6 +75,7 @@ public class AutoICNSFCDelegator {
         NclwNFDSendThread sender = new NclwNFDSendThread();
         Thread sendThread = new Thread(sender);
         sendThread.start();
+        NclwLog.getIns().log("----INTEREST SendThread STARTED----");
         Iterator<Long> endIte = sfc.getEndVNFSet().iterator();
 
         ProcessMgr.getIns().setStartTime(System.currentTimeMillis());
@@ -83,10 +86,13 @@ public class AutoICNSFCDelegator {
             //END SFの割当先を決める．
             AutoICNSFCScheduling sched = AutoICNSFCMgr.getIns().getSched();
             sched.scheduleEndSF(endVNF, job);
+
             ///割り当て前提の部分
             VCPU vcpu = env.getGlobal_vcpuMap().get(endVNF.getvCPUID());
             VM host = NCLWUtil.findVM(env, vcpu.getPrefix());
             NFDTask endTask = job.getNfdTaskMap().get(endID);
+            NclwLog.getIns().log("---Allocatoin: END SF:"+endID + "/VCPU:"+vcpu.getPrefix() + "@:"+host.getIpAddr());
+
             //readFilePath: 送るファイルのpath, //相手側で受信後，入力ファイル生成path
             NCLWData data = new NCLWData(endID, -1, host.getIpAddr(), NCLWUtil.NFD_PORT, sfc, env, job);
             data.setFile(false);
@@ -99,14 +105,15 @@ public class AutoICNSFCDelegator {
             NclwNFDMgr.getIns().getFib().insert(endPrefix, toFace, 1);
 
 
-            System.out.println("**INTEEST SEND: FROM:"+ResourceMgr.getIns().getOwnIPAddr() + "/To:"+host.getIpAddr());
             Name targetName = NclwNFDMgr.getIns().createPrefix(endTask, null);
             Interest newInterest = new Interest(targetName);
             newInterest.setApplicationParameters(new Blob(data.getAllBytes()));
+            NclwLog.getIns().log("----INTEREST SEND:"+ResourceMgr.getIns().getOwnIPAddr() + "->"+host.getIpAddr() + "Prefix:"+ targetName);
 
             //toFace.sendInterest(newInterest);
             //当該データを，END SFのノードへ送る．
             sender.getInterestDataQueue().add(data);
+
         }
 
 

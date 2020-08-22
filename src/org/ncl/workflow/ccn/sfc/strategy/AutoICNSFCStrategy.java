@@ -28,6 +28,7 @@ import org.ncl.workflow.ccn.util.ResourceMgr;
 import org.ncl.workflow.comm.InterestHopInfo;
 import org.ncl.workflow.comm.NCLWData;
 import org.ncl.workflow.comm.WorkflowJob;
+import org.ncl.workflow.logger.NclwLog;
 import org.ncl.workflow.util.NCLWUtil;
 
 import java.net.InetAddress;
@@ -106,16 +107,14 @@ public class AutoICNSFCStrategy extends BackTrackStrategy {
       //  }
 
         //Interestパケット受信の同期はとらない．
-//System.out.println("*****92****");
-//System.out.println("Counter:"+task.getInterestCounter());
 
         //もしSTART VNFならば，実行して結果をDataパケットとして渡す．
         if (task.getVnf().getDpredList().isEmpty()) {
 
             VNF vnf = task.getVnf();
-            //if(task.getInterestCounter() >= vnf.getDsucList().size()){
+           // if(task.getInterestCounter() > vnf.getDsucList().size()){
                 this.processStartVNF(sfcData);
-           // }
+        //    }
             //sfcData.setToFace(inFace);
 
 
@@ -142,7 +141,6 @@ public class AutoICNSFCStrategy extends BackTrackStrategy {
 
                 //既にinterestを送ったかどうかを確認する．
 
-                System.out.println("BEFORE MapSIZE:"+AutoICNSFCMgr.getIns().getInterestSentMap().size());
                 // if(predVNF.isInterestSent()){
                 Iterator<String> sIte = AutoICNSFCMgr.getIns().getInterestSentMap().keySet().iterator();
 
@@ -191,7 +189,10 @@ public class AutoICNSFCStrategy extends BackTrackStrategy {
                 System.out.println("***FACE Structure::" + "Remote:" + host.getIpAddr() + "/Local:" + ResourceMgr.getIns().getOwnIPAddr());
 System.out.println("***NCLWData:"+data.getIpAddr() + "/"+data.getFromTaskID() + "/"+data.getToTaskID());
                 if (host.getIpAddr().equals(ResourceMgr.getIns().getOwnIPAddr())) {
-
+                    vnf.setvCPUID(vcpu.getPrefix());
+                    //念の為，schedのsfcもせっと
+                    VNF tmpVNF = sched.getSfc().findVNFByLastID(vnf.getIDVector().get(1));
+                    tmpVNF.setvCPUID(vcpu.getPrefix());
                     //疑似Interestを作成．
                     Interest predInterest = new Interest();
                     predInterest.setName(PredPrefix);
@@ -201,16 +202,19 @@ System.out.println("***NCLWData:"+data.getIpAddr() + "/"+data.getFromTaskID() + 
                     //Interestの転送をせずに，PipelineのonIncomingInterestを呼ぶ．
                     NclwNFDMgr.getIns().getPipeline().onIncomingInterest(predFace, predInterest);
                 } else {
-
+System.out.println("*****204@Strategy***");
 
                     //異なるノードへの転送であれば，そうする．
                     //異なるVMであれば，vmへ転送する．
                     TcpFace oFace = NclwNFDMgr.getIns().createFace(host.getIpAddr(), ResourceMgr.getIns().getOwnIPAddr());
+  System.out.println("*****209@Strategy***");
+
                     NFDTask predTask = data.getJob().getNfdTaskMap().get(data.getFromTaskID());
 
                     task = data.getJob().getNfdTaskMap().get(data.getToTaskID());
                     System.out.println("**INTEEST HOP SEND2: FROM:" + ResourceMgr.getIns().getOwnIPAddr() + "/To:" + host.getIpAddr());
                     System.out.println("**PredTask:"+predTask.getTaskID() + "/**ToTask:"+task.getTaskID());
+                    data.setSfc(sched.getSfc());
 
                     //oFace.sendInterest();
                     NclwNFDMgr.getIns().getPipeline().onOutgoingInterest(
@@ -283,16 +287,19 @@ System.out.println("***NCLWData:"+data.getIpAddr() + "/"+data.getFromTaskID() + 
      */
     @Override
     public void afterReceiveInterest(Face inFace, Interest interest, FibEntry fibEntry, PitEntry pitEntry) {
-
+        NclwLog.getIns().log("-----afterReceiveInterest START@AutoICNSFCStrategy-----");
         if (interest.getName().toUri().startsWith(NCLWUtil.NCLW_PREFIX)) {
 
             //Interestから，NCLWDataを取り出す．
             NCLWData sfcData = NclwNFDMgr.getIns().fetchNCLWData(interest);
+
+
             String targetIP = sfcData.getIpAddr();
 
             InetAddress addr;
             //自身のIPアドレスを取得する．
             String ownIP = ResourceMgr.getIns().getOwnIPAddr();
+
             boolean isFound = false;
             //自身宛かどうかのチェック．これもチェックする．
             //IPの同一性ではなく，求められる性能の同一性が大事．
@@ -314,14 +321,14 @@ System.out.println("***NCLWData:"+data.getIpAddr() + "/"+data.getFromTaskID() + 
             //predの実行時間@ターゲットノード + blevel_sched(後続SF)@元ノード: ターゲットノード＝元ノード
 
             SFC sfc = sfcData.getSfc();
+
             //NFVEnvironment env = sfcData.getEnv();
             //自身のenvを取得する．したがって，NCLWDataにはenvは含めない．
             NFVEnvironment env = ResourceMgr.getIns().getEnv();
 
-
-            if (ownIP.equals(targetIP)) {
+           // if (ownIP.equals(targetIP)) {
                 isFound = true;
-            }
+    //        }
 
 
             NFDTask task = null;
@@ -346,13 +353,14 @@ System.out.println("***NCLWData:"+data.getIpAddr() + "/"+data.getFromTaskID() + 
                 //自身のIPとenv, predSF, toSF(こちらからのinterest送信）を渡して，vCPUをもらう．
                 //つまり，IP+env + sfcData
                 VCPU retVCPU = sched.findTargetVCPU(sfcData, interest.getName());
-
+                
                 //IPアドレス取得
                 VM vm = env.getGlobal_vmMap().get(retVCPU.getVMID());
 
                 //HashMap<String, HashMap<String, Integer>> ipMap = sfcData.getIpMap();
 
-                System.out.println("***Target VM: " + vm.getIpAddr());
+                VNF predSF0 = sfc.findVNFByLastID(sfcData.getFromTaskID());
+                NclwLog.getIns().log("----Target VM for FromSF" +predSF0.getIDVector().get(1)+":"+ vm.getIpAddr());
                 boolean fwdFlg = false;
                 if (sfcData.getHopInfo().isExists(ownIP)) {
                     fwdFlg = true;
@@ -364,10 +372,10 @@ System.out.println("***NCLWData:"+data.getIpAddr() + "/"+data.getFromTaskID() + 
                 if (sched.getSfc() == null) {
                     sched.setSfc(sfcData.getSfc());
                 }
-
+                //もし自分がpredSF実行対象 or 前に送ったところであれば，自分で実行する．
                 if (vm.getIpAddr().equals(ownIP) || fwdFlg) {
                     VNF predSF = sched.getSfc().findVNFByLastID(sfcData.getFromTaskID());
-                    System.out.println("***Pred SF Preparation Mode: vCPU:" + retVCPU.getPrefix() + "@VNF" + predSF.getIDVector().get(1));
+                    NclwLog.getIns().log("---TargetvCPU is fixed: vCPU:" + retVCPU.getPrefix() + "@VNF" + predSF.getIDVector().get(1));
 
                     //割当先が決まったときだけ，設定する．
                     predSF.setvCPUID(retVCPU.getPrefix());
@@ -387,7 +395,8 @@ System.out.println("***NCLWData:"+data.getIpAddr() + "/"+data.getFromTaskID() + 
 
                     this.processNCLWInterest(sfcData, interest, pitEntry);
                 } else {
-                    System.out.println("***Interest Forwarding Mode***");
+                    NclwLog.getIns().log("----Interest Forwarding Mode for SF"+predSF0.getIDVector().get(1) +
+                            "To:"+predSF0.getIDVector().get(1)+":"+ vm.getIpAddr());
                     SFC frdSFC = null;
 
                     WorkflowJob job = this.updateTaskInJob(sfcData.getJob(), sched.getSfc(), sched.getEnv());
@@ -410,7 +419,7 @@ System.out.println("***NCLWData:"+data.getIpAddr() + "/"+data.getFromTaskID() + 
                     NFDTask predTask = data.getJob().getNfdTaskMap().get(sfcData.getFromTaskID());
 
                     task = data.getJob().getNfdTaskMap().get(sfcData.getToTaskID());
-                    System.out.println("**INTEEST HOP SEND: FROM:" + ResourceMgr.getIns().getOwnIPAddr() + "/To:" + vm.getIpAddr());
+                    NclwLog.getIns().log("----INTEEST HOP SEND: FROM:" + ResourceMgr.getIns().getOwnIPAddr() + "/To:" + vm.getIpAddr());
 
 
                     NclwNFDMgr.getIns().getPipeline().onOutgoingInterest(
@@ -481,6 +490,7 @@ System.out.println("***NCLWData:"+data.getIpAddr() + "/"+data.getFromTaskID() + 
                 }
             }
         } else {
+            System.out.println("484@Strategy");
 
             List<FibNextHop> nextHopList = fibEntry.getNextHopList();
             FibNextHop nextHop = null;

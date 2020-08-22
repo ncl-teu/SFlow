@@ -9,6 +9,8 @@ import com.intel.jnfd.deamon.face.FaceUri;
 import com.intel.jnfd.deamon.face.tcp.TcpChannel;
 import com.intel.jnfd.deamon.face.tcp.TcpFace;
 import com.intel.jnfd.deamon.fw.FaceTable;
+import com.intel.jnfd.deamon.table.Pair;
+import com.intel.jnfd.deamon.table.fib.FibEntry;
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
@@ -21,6 +23,7 @@ import org.ncl.workflow.ccn.sfc.routing.autoicnsfc.AutoICNSFCRouting;
 import org.ncl.workflow.ccn.util.NetInfo;
 import org.ncl.workflow.ccn.util.ResourceMgr;
 import org.ncl.workflow.comm.NCLWData;
+import org.ncl.workflow.logger.NclwLog;
 import org.ncl.workflow.util.HostInfo;
 import org.ncl.workflow.util.NCLWUtil;
 
@@ -45,11 +48,13 @@ public class NclwNFDMgr {
     protected BaseNFDRouting routing;
     private NclwFaceManager mgr;
     private Forwarder fw;
-    private TcpFace face;
+    //private TcpFace face;
     private String ownIP;
     private final HashMap<String, String> ipMap;
     private long startTime;
     private long finishTime;
+
+    private HashMap<String, TcpFace> faceMap;
 
 
     /**
@@ -69,6 +74,7 @@ public class NclwNFDMgr {
         //this.toFaceMap = new HashMap<String, TcpFace>();
         // this.fromFaceMap = new HashMap<String, TcpFace>();
         this.ipMap = new HashMap<String, String>();
+        this.faceMap = new HashMap<String, TcpFace>();
 
 
     }
@@ -88,6 +94,25 @@ public class NclwNFDMgr {
         return (NclwSFCFWPipeline) this.getMgr().getPipeline();
     }
 
+    public TcpFace getFace(String ip){
+        TcpFace ret = null;
+        if(this.faceMap.containsKey(ip)){
+            ret = this.faceMap.get(ip);
+        }else{
+            try{
+                ret = new TcpFace(new FaceUri("tcp4", this.getOwnIPAddr(), NCLWUtil.NFD_PORT),
+                        new FaceUri("tcp4", ip, NCLWUtil.NFD_PORT));
+                this.faceMap.put(ip, ret);
+                //fibへ登録する．特にprefixは指定しないので，/に登録する．
+                Pair<FibEntry> fibEntry = this.getPipeline().getFib().insert(new Name("/"), ret, 1);
+
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+        return ret;
+    }
+
     public BaseNFDRouting getRouting() {
         return routing;
     }
@@ -104,7 +129,15 @@ public class NclwNFDMgr {
         this.channel = channel;
     }
 
-   /* public HashMap<String, TcpFace> getToFaceMap() {
+    public HashMap<String, TcpFace> getFaceMap() {
+        return faceMap;
+    }
+
+    public void setFaceMap(HashMap<String, TcpFace> faceMap) {
+        this.faceMap = faceMap;
+    }
+
+    /* public HashMap<String, TcpFace> getToFaceMap() {
         return toFaceMap;
     }*/
 
@@ -131,11 +164,11 @@ public class NclwNFDMgr {
 
     public void initializeTables(String file) {
         try {
-
+            NclwLog.getIns().log("-----FIB Configuration START------");
             switch (NCLWUtil.ccn_routing) {
                 case 0:
                     this.routing = new NclwSFCNFDRouting();
-
+                    NclwLog.getIns().log("Used Routing: NclwSFCNFDRouting");
                     BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
                     // 最終行まで読み込む
                     String line = "";
@@ -164,18 +197,26 @@ public class NclwNFDMgr {
                         String ip = ipIte.next();
                         //生成+FaceTableへ反映させる．
                        //TcpFace face = this.createFace(ip, this.ownIP);
-                        this.getMgr().getPfactory().createFace(new FaceUri("tcp4", ip, NCLWUtil.NFD_PORT));
+                        if(NCLWUtil.ccn_comm_mode == 0){
+                            this.getMgr().getPfactory().createFace(new FaceUri("tcp4", ip, NCLWUtil.NFD_PORT));
+
+                        }else{
+                            //取得 or 生成+FIB追加の両方を行う．
+                            this.getFace(ip);
+                        }
 
                         //Fibにも追加しておく．
                         //this.getFib().insert(new Name(NCLWUtil.NCLW_PREFIX), face, 1);
                     }
+                    NclwLog.getIns().log("-----FIB configuration FINISHED-----");
 
                     break;
                 case 1:
+                    NclwLog.getIns().log("Used Routing: AutoICNSFCRouting");
+
                     //FIBの設定を行う．
                     this.routing = new AutoICNSFCRouting();
                     this.routing.initializeFIB(file);
-
                     break;
             }
 
@@ -283,7 +324,12 @@ public class NclwNFDMgr {
 
     public  TcpFace createFace(String remoteAddress, String localAddress) {
 
+        if(NCLWUtil.ccn_comm_mode > 0){
+            TcpFace face = this.getFace(remoteAddress);
+            return face;
+        }
         TcpFace face = this.channel.getFace(remoteAddress, NCLWUtil.NFD_PORT);
+
         if (face == null) {
             try{
                 /*this.getMgr().getPfactory().createFace(
@@ -293,6 +339,7 @@ public class NclwNFDMgr {
 
 
                  */
+                System.out.println("***********************CREATE FACE2******************");
                 face = this.createFace2(remoteAddress);
 
           /*  try{
@@ -527,13 +574,7 @@ public class NclwNFDMgr {
         this.fw = fw;
     }
 
-    public TcpFace getFace() {
-        return this.face;
-    }
 
-    public void setFace(TcpFace face) {
-        this.face = face;
-    }
 
 
 }

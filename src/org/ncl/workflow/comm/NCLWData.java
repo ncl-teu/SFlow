@@ -4,6 +4,7 @@ import com.intel.jndn.forwarder.api.Face;
 import com.intel.jnfd.deamon.face.tcp.TcpFace;
 import net.gripps.cloud.nfv.NFVEnvironment;
 import net.gripps.cloud.nfv.sfc.SFC;
+import org.ncl.workflow.ccn.core.NclwNFDMgr;
 
 import java.io.*;
 import java.util.HashMap;
@@ -90,6 +91,8 @@ public class NCLWData implements Serializable {
 
     private InterestHopInfo hopInfo;
 
+    private String orgIP;
+
     /**
      * DataがやってきたFace
      */
@@ -99,6 +102,19 @@ public class NCLWData implements Serializable {
      * Dataの送り先Face
      */
     //private Face toFace;
+
+    public NCLWData(long fromTaskID, long toTaskID, String srcIP, String ipAddr, int portNumber, SFC sfc, NFVEnvironment env, WorkflowJob job) {
+        this.orgIP = srcIP;
+        this.fromTaskID = fromTaskID;
+        this.toTaskID = toTaskID;
+        this.ipAddr = ipAddr;
+        this.portNumber = portNumber;
+        this.sfc = sfc;
+        this.env = env;
+        this.job = job;
+        //this.ipMap = new HashMap<String,  HashMap<String, Integer>>();
+        this.hopInfo = new InterestHopInfo();
+    }
 
 
     public NCLWData(long fromTaskID, long toTaskID, String ipAddr, int portNumber, SFC sfc, NFVEnvironment env, WorkflowJob job) {
@@ -280,6 +296,8 @@ public class NCLWData implements Serializable {
     }
 
     public byte[] getAllBytes(){
+        //自身のIPアドレスをセットする．
+        this.setOrgIP(NclwNFDMgr.getIns().getOwnIPAddr());
        if(this.allBytes == null){
             this.convertToBytes();
         }
@@ -295,5 +313,11 @@ public class NCLWData implements Serializable {
         this.bytes = bytes;
     }
 
+    public String getOrgIP() {
+        return orgIP;
+    }
 
+    public void setOrgIP(String orgIP) {
+        this.orgIP = orgIP;
+    }
 }

@@ -11,6 +11,7 @@ import com.intel.jnfd.deamon.face.tcp.TcpFace;
 import com.intel.jnfd.deamon.face.tcp.TcpFactory;
 import com.intel.jnfd.deamon.fw.ForwardingPipeline;
 import com.intel.jnfd.util.NfdCommon;
+import net.gripps.ccn.CCNUtil;
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
@@ -55,26 +56,26 @@ public class NclwFaceManager implements Runnable, FaceManager {
     public NclwFaceManager(ExecutorService pool, ForwardingPipeline pipeline) {
         this.pool = pool;
         this.pipeline = pipeline;
+        if(NCLWUtil.ccn_comm_mode == 0) {
+            this.pfactory = new TcpFactory(this.pool,
+                    onChannelCreated1,
+                    onChannelCreationFailed,
+                    onChannelDestroyed,
+                    onChannelDestructionFailed,
+                    onFaceCreated,
+                    onFaceCreationFailed,
+                    onFaceDestroyed,
+                    onFaceDestructionFailed,
+                    onFaceDestroyedByPeer,
+                    onDataReceived,
+                    onInterestReceived);
 
-        this.pfactory = new TcpFactory(this.pool,
-                onChannelCreated1,
-                onChannelCreationFailed,
-                onChannelDestroyed,
-                onChannelDestructionFailed,
-                onFaceCreated,
-                onFaceCreationFailed,
-                onFaceDestroyed,
-                onFaceDestructionFailed,
-                onFaceDestroyedByPeer,
-                onDataReceived,
-                onInterestReceived);
 
-
-        registerProtocol(pfactory);
-        //チャンネル登録
-        NclwNFDMgr.getIns().setChannel(pfactory.getChannelMap().get(NCLWUtil.NFD_PORT));
-        logger.setLevel(NfdCommon.LOG_LEVEL);
-
+            registerProtocol(pfactory);
+            //チャンネル登録
+            NclwNFDMgr.getIns().setChannel(pfactory.getChannelMap().get(NCLWUtil.NFD_PORT));
+            logger.setLevel(NfdCommon.LOG_LEVEL);
+        }
     }
 
     public ExecutorService getPool() {

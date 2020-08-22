@@ -39,6 +39,8 @@ public class NclwNFDRecvThread extends RecvThread {
         super(port, null);
     }
 
+
+
     /**
      * NCLWDataを受信して，タスクへと渡す．
      */
