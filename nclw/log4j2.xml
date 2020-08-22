@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+<Configuration status="off">
+
+    <!-- Propertiesは、nameの値を変数として使える -->
+    <Properties>
+        <!--<Property name="format1">%d{yyyy/MM/dd HH:mm:ss.SSS} [%t] %-6p %c{10} %m%n</Property>-->
+        <Property name="format1">%d{yyyy/MM/dd HH:mm:ss.SSS}: %m%n</Property>-
+        <!-- ログのフォーマット
+            %dは日時。{}に日時の形式を指定
+            %tはスレッド名
+            %-6pはログレベル名称を左詰めで6文字分出力する。「debug」であれば後ろに空白１文字が追加される。
+                但し、%-3pとしても名称は削られず「debug」として出力される。%6と-をとると右づめになる。
+            %c{x}は,例えばロガー名がorg.apache.commons.Fooのとき%c{2}の場合、commons.Fooが出力される
+            %mはログメッセージ
+            %nは改行
+       -->
+        <Property name="logfile">nclwLog</Property>
+        <Property name="logfile-archive">nclw/nclwLog%d{yyyy-MM-dd}-%i</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- コンソールに出力する設定 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout>
+                <pattern>${format1}</pattern>
+            </PatternLayout>
+        </Console>
+
+        <!-- ファイルに出力する設定 -->
+        <RollingFile name="logfile001" append="false" fileName="${logfile}"
+                     filePattern="${logfile-archive}">
+            <PatternLayout>
+                <pattern>${format1}</pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="trace">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="logfile001" />
+        </Root>
+    </Loggers>
+</Configuration>
