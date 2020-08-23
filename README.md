@@ -6,13 +6,12 @@ Readme(japanese) is [here](https://github.com/ncl-teu/SFlow/blob/master/README_J
 - A function is a docker container in SFlow. When a function is ready for execution, SFlow check whether the batch program is installed or not on the node. If so, the function is processed by the system call, otherwise, it attempts to pull the docker image from the docker repository and load it before the execution. 
 - Chaining scheme: IP-based chaining and ICN-based chaining are supported in SFlow. If ICN-based chaining is enabled, the resultant data is cached on the node, thereby the cache is returned to the successor functions if the interest packet is arrived without execution. 
 ## System structure
-想定する環境ですが，↓の図のように，
-- **Delegator**: ワークフロー情報(JSONファイル），ワーカー情報（JSONファイル），ジョブ情報（JSONファイル）を保持して，スケジューリングする．
-- **ファイルサーバ**: ジョブ実行に必要なファイルを保持し，FTP経由で提供する
-- **Dockerリポジトリ**: Dockerイメージを格納しておき，実行時にワーカーへ提供する
-- **ワーカ群**: VM，物理ホスト集合であり，ファンクション実行を行うノード集合．IPアドレスが割り当てられたもの
+An assumed system structure is shown the figure. 
+- **Delegator**: Schedule each function using Workflow information(JSON file) and node informatino(JSON file). 
+- **File server**: It provides input files as necessary through FTP and SSH protocols. 
+- **Docker repository(private)**: It has dockar images, and it is pulled from nodes as necessary. (if no docker container is loaded on the node). 
+- **ワーカ群**:  The sef of VMs and physical nodes to which IP addresses are allocateds. 
 
-が必要です．
 ![system](https://user-images.githubusercontent.com/4952618/73509139-7a055200-4421-11ea-9108-245a240a87be.png)
 
 ## セットアップ
