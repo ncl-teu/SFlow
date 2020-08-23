@@ -10,7 +10,7 @@ An assumed system structure is shown the figure.
 - **Delegator**: Schedule each function using Workflow information(JSON file) and node informatino(JSON file). 
 - **File server**: It provides input files as necessary through FTP and SSH protocols. 
 - **Docker repository(private)**: It has dockar images, and it is pulled from nodes as necessary. (if no docker container is loaded on the node). 
-- **ワーカ群**:  The sef of VMs and physical nodes to which IP addresses are allocateds. 
+- **Set of nodes**:  The sef of VMs and physical nodes to which IP addresses are allocated. 
 
 ![system](https://user-images.githubusercontent.com/4952618/73509139-7a055200-4421-11ea-9108-245a240a87be.png)
 
