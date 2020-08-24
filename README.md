@@ -12,8 +12,7 @@ An assumed system structure is shown in the figure.
 - **Docker repository(private)**: It has dockar images, and it is pulled from nodes as necessary. (if no docker container is loaded on the node). 
 - **Set of nodes**:  The sef of VMs and physical nodes to which IP addresses are allocated. 
 
-![system](https://user-images.githubusercontent.com/4952618/73509139-7a055200-4421-11ea-9108-245a240a87be.png)
-
+![sflow](https://user-images.githubusercontent.com/4952618/91002061-898bf880-e608-11ea-88a0-2b4f46aa163a.png)
 ## セットアップ
 ### 設定ファイル（Delegator + ワーカに配備）
 - 設定ファイルは**nclw2.properties**で，下記のように設定します．自身で設定する必要がある箇所のみ表示しています．
