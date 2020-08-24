@@ -13,10 +13,9 @@ An assumed system structure is shown in the figure.
 - **Set of nodes**:  The sef of VMs and physical nodes to which IP addresses are allocated. 
 
 ![sflow](https://user-images.githubusercontent.com/4952618/91002061-898bf880-e608-11ea-88a0-2b4f46aa163a.png)
-## セットアップ
-### 設定ファイル（Delegator + ワーカに配備）
-- 設定ファイルは**nclw2.properties**で，下記のように設定します．自身で設定する必要がある箇所のみ表示しています．
-使用時には，このリポジトリにあるnclw2.propertiesを用いて，書き換えてください（↓をコピペしないでください）．
+## Set up
+### Config. file（Deployed on delegator and nodes）
+- Config. file is **nclw2.properties**, and is configured as follows: 
 ~~~
 # IPベースによる通信ポート番号．例: 8088
 port_number=
