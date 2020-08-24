@@ -200,19 +200,20 @@ ffmpeg $1 $2 $3 $4 $5
 zip $6 $7
 ~~~
 Then the parameters defined in the subsequent parts of "DUMMY" is passed to docker-entrypoint.sh. 
-### Dockerイメージの作成と，リポジトリへの配備
-- DockerFileとdocker-entryopoint.shのあるディレクトリにて`docker save イメージ名 -o 名前.tar` にて，イメージファイル(.tar）を作成します．
-- あとは，Dockerリポジトリの指定場所（docker_repository_home）にtarファイルをアップロードしておけばOKです．イメージ名，名前ともにdocker-imagenameの値です．
+### How to create a docker image and deploy to the docker repository in SFLow. 
+- Create the image file (.tar) by `docker save IMAGE NAME -o NAME.tar` in the directory having DockerFile and docker-entropoint.sh. 
+- Then upload the tar file to the location specified by `docker_repository_home` in the docker repository. Note that both IMAGE NAME and NAME are the value of **docker-imagename**. 
 
-## 使い方
-### 0. スケジューリング結果のJsonファイル化
-`./schedgen.sh [環境情報ファイル] [ジョブ情報ファイル] [Jsonファイルの出力先パス]`という形式です．たとえば，
-`./schedgen.sh nclw/env.json job_ffmpeg.json ret.json`とすれば，nclw/env.jsonの環境情報，nclw_job_ffmpeg.jsonのワークフロージョブ情報を読み込んでスケジューリングをして，そしてret.jsonにファイルが新規作成（もしくは上書き）されます．出力先の構造ですが，**ジョブ情報ファイルの各ファンクション(task_list内の各taskノード）に，割当先のipアドレス(ip)，vCPUID(vcpu_id)，VMのID(vm_id)が付与された状態になっています**. つまり，割当先の性能を知りたければ，環境情報ファイルを別途読み込んでおくことが必要になります．
+## How to use
+### 0. Generating JSON file as the scheduling result (mapping result). 
+- The cmd is `./schedgen.sh [env. file] [job file] [output path of the JSON file]`. 
+- For example, by executing `./schedgen.sh nclw/env.json job_ffmpeg.json ret.json`, SFlow loads nclw/env.json and nclw_job_ffmpeg.json and performs the scheduling, thereby **ret.json** is generated as the output mapping file. 
+- The format of the output JSON file is, **Each function (SF) in task_list, and each SF has the allocated node IP(ip)，vCPUID(vcpu_id), and VM ID(vm_id)**. 
 ### 1. IP-based SFC
-#### 1.1 起動
-1. Delegator側にて，`./nclw_startworkder.sh`によって**nclw_hosts**に記載されている全ワーカー側プロセスを起動．これにより，各ワーカーは，データ受信待ちをする．
-2. Delegator側にて，`./nclw_delegator.sh`によってスケジューリングを行い，ジョブ情報と環境情報をENDファンクション処理ノードへ送信される．そして，スケジュール通りに処理＋通信がなされる．
-3. ワーカープロセスを終了させる場合は，Delegator側にて，`./nclw_stopworker.sh`によって一斉終了させる．
+#### 1.1 Start the process
+1. Run `./nclw_startworkder.sh` at the delegator. Then all nodes in **nclw_hosts** run its required proecesses．As a result every node comes to wait for data. 
+2. Run `./nclw_delegator.sh` at the delegator, then a scheduling algorithm is performed. Both the mapping information and environment information are sent to the START SF(i.e., the node to which the START SF is allocated). Then all SFs are processed according to the scheduling result. The result from the END SF is returned to the delegator. 
+3. All stop: run `./nclw_stopworker.sh` at the delegator. Then all processes of SFlow are stopped at all nodes. 
 
 ### 2. ICN-based static SFC
 #### 2.1 起動
