@@ -1,4 +1,4 @@
-Readme(japanese) is [here](https://github.com/ncl-teu/SFlow/blob/master/README_JP.md): 
+README(Japanese) is [here](https://github.com/ncl-teu/SFlow/blob/master/README_JP.md): 
 # SFlow: Workflow-engine for IP/ICN based service function chaining with scheduling algorithms. 
 ## Summary of SFlow
 - SFlow supports task/function scheduling in a workflow by allocating each function to a vCPU/CPU core for each physical CPU. 
@@ -143,13 +143,13 @@ ccn_fib_maxfaces_entry=5
 }
 ~~~
 ### Config. file of a workflow@delegator.
-- Job情報のファイル(JSON)は，↓のとおりです．nclw/job_ncl.json またはnclw/job_ffmpeg.jsonに記載されています．
-- 下記のJobは，nclw/ffmpeg.jsonのフォーマットです．
-- $R^ファイル　は，もし無ければFTPサーバからダウンロードしてくるという意味です．
-- $F^先行ファンクションIDは，先行ファンクションからの出力データを入力とする，という意味です．
-- 後続ファンクションリストはdest_task_idにて複数指定します．そして，dest_taskに相当するファンクションにて，$F^先行ファンクションIDと指定します．
-- DUMMYは，Dockerのentrypointに引き渡す場合は無視されます．実際には2つ目移行の箇所がentrypointへ渡されます．
-- rootは，ジョブIDで，その中にtask_listがそれぞれ格納されています．
+- Workflow job cofig. file(JSON) is as follows. Example files are **nclw/job_ncl.json** or **nclw/job_ffmpeg.json**.
+- The following example is nclw/ffmpeg.json. 
+- **$R^FILE**: An required file to process (input file), and the node tries to download from the file server if it does not have it. 
+- **$F^Predecessor SF** The function requires the data as the incomming data from its predecessor SFs.
+- Sccessor SFs are specified by **dest_task_id**. **$F_Predecesssor SF** is defined at the destination SFs specified by "dest_task_id".
+- **DUMMY** part is ignored if cmd is defined in docker entorypoint. Actually, the second and following parts are passed to the docker entirypoint.
+- **root** is job ID, and each SF is defined as its child parts. 
 ~~~
 {
   "job_id": 1,
@@ -183,7 +183,7 @@ ccn_fib_maxfaces_entry=5
     }
   ]}
 ~~~
-- 例えばtask_idが2の場合は，DockerFileは
+- For example, if the SF has task_id = 2, the DockerFile is as follows. 
 ~~~
 FROM alpine:latest
 WORKDIR /
@@ -192,14 +192,14 @@ RUN apk --update add ffmpeg && \
 COPY docker-entrypoint.sh ./
 ENTRYPOINT ["./docker-entrypoint.sh"]
 ~~~
-となっており，docker-entrypoint.shは，
+And docker-entrypoint.sh is described as follows. 
 ~~~
 #!/bin/sh
 
 ffmpeg $1 $2 $3 $4 $5
 zip $6 $7
 ~~~
-という形式になっています．そしてdocker-entrypoint.shに対して，先程のJSONファイルのDUMMY移行の引数が入ってくる仕組みです．
+Then the parameters defined in the subsequent parts of "DUMMY" is passed to docker-entrypoint.sh. 
 ### Dockerイメージの作成と，リポジトリへの配備
 - DockerFileとdocker-entryopoint.shのあるディレクトリにて`docker save イメージ名 -o 名前.tar` にて，イメージファイル(.tar）を作成します．
 - あとは，Dockerリポジトリの指定場所（docker_repository_home）にtarファイルをアップロードしておけばOKです．イメージ名，名前ともにdocker-imagenameの値です．
