@@ -224,7 +224,7 @@ Then the parameters defined in the subsequent parts of "DUMMY" is passed to dock
 
 ### 3. ICN-based autonomous SFC(AutoICN-SFC)
 SFlow supports a autonomous SF scheduling, i.e., each node attempts schedule SFs from its own FIB. 
-#### ３.1 Start the process
+#### 3.1 Start the process
 1. Run `./nclw_autostartworker.sh` at the delegator. Then all processes in nodes defined at **nclw_hosts**. Then every node comes to wait for interest packets.
 2. Run `./nclw_autodelegator.sh` at the delegaotr. Then the delegator determines the target node for the END SF and it sends the interest packet to the target node. 
 On each node, when it receives an interest packet, it determines the target node for the predecessor SF and it send the interest packet. The result from the END SF is returned to the delegator.  
