@@ -13,58 +13,98 @@ An assumed system structure is shown in the figure.
 - **Set of nodes**:  The sef of VMs and physical nodes to which IP addresses are allocated. 
 
 ![sflow](https://user-images.githubusercontent.com/4952618/91002061-898bf880-e608-11ea-88a0-2b4f46aa163a.png)
-## Set up
+## Setup
 ### Config. file（Deployed on delegator and nodes）
 - Config. file is **nclw2.properties**, and is configured as follows: 
 ~~~
-# IPベースによる通信ポート番号．例: 8088
-port_number=
-# DelegatorのIPアドレス．例: 192.168.1.17
+# the number of threads for sending/receiving data.
+# never used...
+rmgr_send_thread_num=10
+rmgr_recv_thread_num=10
+
+# sec(times) of the total count of cpu usages.
+# never used...
+total_cnt_cpuusage=10
+
+# Target port number of data send/receive. 
+port_number=8088
+#8088
+# IP address of delegator
+#delegator_ip=192.168.1.15
 delegator_ip=
 
-# Delegatorで行うSFCのスケジューリングアルゴリズム．下記の番号を指定してください．
 # 0: SF-CUV 1: HEFT 2: FWS 3: CoordVNF 4: HClustering 5: PEFT
-sched_algorithm=
+sched_algorithm=0
 
-# 実行に必要な入力ファイルの転送プロトコル．現状は"ftp"を指定してください．
-input_file_transfer_protocol=ftp
-
-# FTPサーバのIPアドレスか，ホスト名を指定してください．
+# "ftp" or "scp" can be chosen.
+input_file_transfer_protocol=scp
+# type the hostname or IP address of the ftp/scp server.
+#ftp_server_ip=192.168.1.15
+#ftp_server_id=user
 ftp_server_ip=
-
-# FTPサーバへのログインID
 ftp_server_id=
-
-# FTPサーバへのログインパスワード
 ftp_server_pass=
 
-# FTPサーバの絶対パスのホームディレクトリ．最後は"/"をつけないでください．例: /home/test/workflow
-ftp_server_homedirName=nclw
+# /home/user/...
+#ftp_server_homedirName=/home/user/files
+ftp_server_homedirName=
 
-# DockerリポジトリのIPアドレス．
+# The private docker repository IP
+#docker_repository_ip=192.168.1.15
 docker_repository_ip=
 
-# Dockerリポジトリのイメージファイルが格納されているパス．最後は"/"をつけないでください．例: /home/test/images
+# Home directory of the docker repository.
+#docker_repository_home=/home/kanemih/nclw_images
 docker_repository_home=
-
-# DockerリポジトリのSSHログインのユーザID
+# ssh login ID/pass for the docker repository.
 docker_repository_userid=
-
-# DockerリポジトリのSSHログインのパスワード
 docker_repository_password=
 
-# ワーカのワーキングディレクトリにおいて，Dockerイメージファイル(.tar）を格納するディレクトリ
-# 例: ワーカのワーキングディレクトリ: /home/test/work/ で，docker_localdir=docker_tar とすると，Docker
-# リポジトリからSSH経由で取得したtarファイルは，
-# /home/test/work/docker_tar 以下に保存される．
-docker_localdir=docker_tar
+# tmp directory to save the downloaded docker image for each node. 
+# if the value is "docker_tar" the absolute path is $NCLW_HOME/docker_tar and 
+# All docker image is stored in the directory. 
+#docker_localdir=docker_tar
+docker_localdir=
+
+# In the ICN-SFC mode, interest/data is done by asynchronous channel(0) or server socket (1). 
+# Currently, the mode of "1" works. 
+#0: asynchronous 1: socket
+ccn_comm_mode=1
+## Strategy of NDN
+#0: BestRouteStrategy 1: BackTrackStrategy 2: AutoICNSFCStrategy
+nfd.strategy=2
+
+#### Autonomous ICN ######
+
+# Number of Nighborhood nodes for each node.
+ccn_node_routernum=10
+
+# max face num for each node.
+ccn_node_face_num_max=100
+
+# FIB max
+ccn_fib_entry_max=80
+
+
+
+# Routing
+# 0: Base 1: AutoICN-SFCRouting
+ccn_routing=1
+
+#BradcastAddress for AutoICN-SFC.
+ccn_bcastaddress=192.168.1.255
+ccn_networkaddress=192.168.1.0
+ccn_bcastport=15454
+#ms
+ccn_connection_timeout=2000
+# max faces for each FIB entry.
+ccn_fib_maxfaces_entry=5
 ~~~ 
-### 環境情報のファイル(Delegatorで保持）
-- 環境情報ファイル(JSON)の形式は，↓のとおりです．実際に使われる特定環境用のファイルは，nclw/env_ncl.json に記載されています．
-- 下記の例は，データセンター(クラウド)が一つで，物理ホストがデータセンターに1台あります．当該ホストは2コアで，各コアではHyper-ThreadがONであるため，
-   1コアあたり2つのvCPU（仮想CPU）が動作可能ということです．
-- また，当該ホストは2つのVMが稼働しており，1つ目のVMは2つのvCPU，VM_2は1つのvCPUにマッピングされている状態です．
-- この場合は，vCPU番号0^0^0^1^0はアイドル状態となっており，それ以外はVM上の処理に使われています．
+### Env. config file@Delegator
+- Environment file(JSON) is shown as follows. Sample file is **nclw/env_ncl.json**.
+- In the following example, we assume that there is one data center (cloud) and one physical node in the cloud. The node has two CPU cores, and hyper-threading is enable for each core. Thus two vCPUs (virtual CPUs) can run simultaneously on a core. 
+- The physical node has two VMs, and the first VM is mapped to two vCPUs and the second one is mapped to one vCPU.
+- In this case, **vCPU ID: 0^0^0^1^0** is idle state, and others are used for processing on the VM.
 ~~~
 {
   "dc_list": [
@@ -102,7 +142,7 @@ docker_localdir=docker_tar
   ]
 }
 ~~~
-### Workflowジョブの設定（Delegatorで保持）
+### Config. file of a workflow@delegator.
 - Job情報のファイル(JSON)は，↓のとおりです．nclw/job_ncl.json またはnclw/job_ffmpeg.jsonに記載されています．
 - 下記のJobは，nclw/ffmpeg.jsonのフォーマットです．
 - $R^ファイル　は，もし無ければFTPサーバからダウンロードしてくるという意味です．
