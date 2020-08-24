@@ -216,19 +216,18 @@ Then the parameters defined in the subsequent parts of "DUMMY" is passed to dock
 3. All stop: run `./nclw_stopworker.sh` at the delegator. Then all processes of SFlow are stopped at all nodes. 
 
 ### 2. ICN-based static SFC
-#### 2.1 起動
-1. Delegator側にて，`./nclw_nfdstartworkder.sh`によって**nclw_hosts**に記載されている全ワーカー側プロセスを起動．これにより，各ワーカーは，データ受信待ちをする．
-2. Delegator側にて，`./nclw_nfdelegator.sh`によってスケジューリングを行い，ジョブ情報と環境情報をENDファンクション処理ノードへ送信される．そして，スケジュール通りに処理＋通信がなされる．
-3. ワーカープロセスを終了させる場合は，Delegator側にて，`./nclw_stopworker.sh`によって一斉終了させる．
-4. 実行ログを見る場合は，Delegator側にて`./nclw_cfdcollectlog.sh`で**nclw_hosts**に記載されている全ワーカー側のログを収集して，collectLog@Delegatorに書き込まれます．その後，**collectLog**を見て実行ログを確認してください．また，各ワーカーでの単独ログは，ワーカーのnclwLogに書き込まれていますので，個別に確認する場合はnclwLog@ワーカーを見てください．
+#### 2.1 Start the process
+1. Run `./nclw_nfdstartworkder.sh` at the delegator. Then all processes in nodes defined at **nclw_hosts**. Then every node comes to wait for interest packets.
+2. Run `./nclw_nfdelegator.sh` at the delegaotr. Then the delegator performs the schedulilng. Both the mapping information and environment information are sent to the END SF(i.e., the node to which the END SF is allocated). Then all SFs are processed according to the scheduling result. The result from the END SF is returned to the delegator.  
+3. All stop: run `./nclw_stopworker.sh` at the delegator. Then all processes of SFlow are stopped at all nodes. 
+4. If you watch the log from all nodes, run `./nclw_cfdcollectlog.sh` at the delegator, then all logs in nodes defined at **nclw_hosts** are merged and sent to the delegator. Then the merged log is written to collectLog@Delegator. Each log for each node is written to **nclwLog**.
 
 ### 3. ICN-based autonomous SFC(AutoICN-SFC)
-各ノードが，自身のFIBの中からSFの割当先を決めて，その結果に基づいてICN-SFCを行うアルゴリズム実装です．
-
-### APIについて
-#### Faceの作成
-`TcpFace Face名 = NclwNFDMgr.getIns().createFace(宛先IPアドレス, 送信元IPアドレス);`
-#### FIBへのFace追加
-`NclwNFDMgr.getIns().getFib().insert(Name型のPrefix, 追加するFace, コスト値(例: 1）);`
-#### PITへのFace追加
-`NclwNFDMgr.getIns().getPit().insert(Interest型のinterest);`
+SFlow supports a autonomous SF scheduling, i.e., each node attempts schedule SFs from its own FIB. 
+### API
+#### creating Face
+`TcpFace Face Name = NclwNFDMgr.getIns().createFace(DestIP,  SrcIP);`
+#### Adding a face to FIB
+`NclwNFDMgr.getIns().getFib().insert(Name Prefix, Face, cost value(ex: 1）);`
+#### Adding a face to PIT
+`NclwNFDMgr.getIns().getPit().insert(Interest interest);`
