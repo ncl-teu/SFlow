@@ -237,3 +237,9 @@ On each node, when it receives an interest packet, it determines the target node
 `NclwNFDMgr.getIns().getFib().insert(Name Prefix, Face, cost value(ex: 1）);`
 #### Adding a face to PIT
 `NclwNFDMgr.getIns().getPit().insert(Interest interest);`
+
+# Copyright
+
+see [LICENSE](https://github.com/ncl-teu/SFlow/blob/master/LICENSE)
+
+Copyright (c) 2019 Hidehiro Kanemitsu <kanemitsuh@stf.teu.ac.jp>
