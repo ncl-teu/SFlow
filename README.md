@@ -15,7 +15,7 @@ An assumed system structure is shown in the figure.
 ![sflow](https://user-images.githubusercontent.com/4952618/91002061-898bf880-e608-11ea-88a0-2b4f46aa163a.png)
 ## Setup
 ### Config. file（Deployed on delegator and nodes）
-- Config. file is **![nclw2.properties](![sflow](https://user-images.githubusercontent.com/4952618/91002061-898bf880-e608-11ea-88a0-2b4f46aa163a.png)**.
+- Config. file is [nclw2.properties](https://user-images.githubusercontent.com/4952618/91002061-898bf880-e608-11ea-88a0-2b4f46aa163a.png).
 ### Env. config file@Delegator
 - Environment file(JSON) is shown as follows. Sample file is **nclw/env_ncl.json**.
 - In the following example, we assume that there is one data center (cloud) and one physical node in the cloud. The node has two CPU cores, and hyper-threading is enable for each core. Thus two vCPUs (virtual CPUs) can run simultaneously on a core. 
