@@ -148,9 +148,9 @@ public class NCLWUtil {
             NCLWUtil.input_file_transfer_protocol = NCLWUtil.prop.getProperty("input_file_transfer_protocol");
             NCLWUtil.nfd_strategy = Integer.valueOf(NCLWUtil.prop.getProperty("nfd.strategy"));
             NCLWUtil.ccn_routing = Integer.valueOf(NCLWUtil.prop.getProperty("ccn_routing"));
-            NCLWUtil.ccn_bcastaddress = NCLWUtil.prop.getProperty("ccn_bcastaddress");
+            //NCLWUtil.ccn_bcastaddress = NCLWUtil.prop.getProperty("ccn_bcastaddress");
 
-            NCLWUtil.ccn_bcastport = Integer.valueOf(NCLWUtil.prop.getProperty("ccn_bcastport"));
+            //NCLWUtil.ccn_bcastport = Integer.valueOf(NCLWUtil.prop.getProperty("ccn_bcastport"));
             NCLWUtil.ccn_networkaddress = NCLWUtil.prop.getProperty("ccn_networkaddress");
             NCLWUtil.ccn_fib_maxfaces_entry = Integer.valueOf(NCLWUtil.prop.getProperty("ccn_fib_maxfaces_entry"));
             //Common.MAX_NDN_PACKET_SIZE = 12000000;

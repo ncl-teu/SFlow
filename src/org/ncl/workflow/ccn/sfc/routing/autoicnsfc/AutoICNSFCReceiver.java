@@ -11,7 +11,7 @@ import java.util.Date;
  */
 public class AutoICNSFCReceiver {
 
-
+/*
     public void recv() throws Exception {
         DatagramSocket dgSocket = new DatagramSocket(NCLWUtil.ccn_bcastport);
 
@@ -27,4 +27,6 @@ public class AutoICNSFCReceiver {
             System.out.println( ": " + new Date() );
         }
     }
+
+ */
 }

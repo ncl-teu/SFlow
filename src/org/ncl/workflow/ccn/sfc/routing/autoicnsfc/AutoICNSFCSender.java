@@ -29,7 +29,7 @@ public class AutoICNSFCSender implements Serializable, Runnable {
 
         }
     }
-
+/*
     public  void broadcastSend(
             String broadcastMessage) throws IOException {
 
@@ -41,7 +41,7 @@ public class AutoICNSFCSender implements Serializable, Runnable {
         new DatagramSocket().send( packet );
 
     }
-
+*/
     List<InetAddress> listAllBroadcastAddresses() throws SocketException {
         List<InetAddress> broadcastList = new ArrayList<>();
         Enumeration<NetworkInterface> interfaces

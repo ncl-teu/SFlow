@@ -17,10 +17,7 @@ import oshi.software.os.OperatingSystem;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 public class ResourceMgr implements Serializable {
 
@@ -90,10 +87,24 @@ public class ResourceMgr implements Serializable {
 
             NetworkIF[] ifs = hware.getNetworkIFs();
             //指定のネットワークアドレスに対応したNICの帯域幅を取得する．
-            String org_nwAddr =  NCLWUtil.ccn_networkaddress;
-            //定義済みNWアドレスを2進に変換する．
-            byte[] bIP = InetAddress.getByName(org_nwAddr).getAddress();
-            String ip_binary = new BigInteger(1, bIP).toString(2);
+            //String org_nwAddr =  NCLWUtil.ccn_networkaddress;
+            String line =  NCLWUtil.ccn_networkaddress;
+
+            StringTokenizer st = new StringTokenizer(line, ",");
+            int cnt = 0;
+            HashMap<String, Integer> ipMap = new HashMap<String, Integer>();
+
+            while (st.hasMoreTokens()) {
+                // 1行の各要素をタブ区切りで表示
+                String org_nwAddr = st.nextToken().trim();
+
+                //定義済みNWアドレスを2進に変換する．
+                byte[] bIP = InetAddress.getByName(org_nwAddr).getAddress();
+                String ip_binary = new BigInteger(1, bIP).toString(2);
+                ipMap.put(ip_binary, new Integer(1));
+            }
+
+
           // System.out.println(info.getOperatingSystem().getNetworkParams().getIpv4DefaultGateway());
 
             for(int i=0;i<ifs.length;i++){
@@ -104,7 +115,8 @@ public class ResourceMgr implements Serializable {
                     String networkAddress = this.calcNetworkAddress(ifs[i].getIPv4addr()[0], ifs[i].getSubnetMasks()[0]);
                     //System.out.println("MAC:"+ifs[i].getMacaddr() + "BW:"+ifs[i].getSpeed()/(1000000*8));
 
-                    if(ip_binary.equals(networkAddress)){
+                //    if(ip_binary.equals(networkAddress)){
+                    if(ipMap.containsKey(networkAddress)){
                         //指定のネットワークに一致すれば，その帯域幅を取得する．
                         //親の帯域幅はわかる？
                         bw = (long)Calc.getRoundedValue(ifs[i].getSpeed()/(1000000*8));
@@ -163,17 +175,32 @@ public class ResourceMgr implements Serializable {
                 HardwareAbstractionLayer hware = info.getHardware();
                 NetworkIF[] ifs = hware.getNetworkIFs();
                 //指定のネットワークアドレスに対応したNICの帯域幅を取得する．
-                String org_nwAddr =  NCLWUtil.ccn_networkaddress;
-                //定義済みNWアドレスを2進に変換する．
-                byte[] bIP = InetAddress.getByName(org_nwAddr).getAddress();
-                String ip_binary = new BigInteger(1, bIP).toString(2);
+                //String org_nwAddr =  NCLWUtil.ccn_networkaddress;
+                String line =  NCLWUtil.ccn_networkaddress;
+
+                StringTokenizer st = new StringTokenizer(line, ",");
+                int cnt = 0;
+                HashMap<String, Integer> ipMap = new HashMap<String, Integer>();
+
+                while (st.hasMoreTokens()) {
+                    // 1行の各要素をタブ区切りで表示
+                    String org_nwAddr = st.nextToken().trim();
+
+                    //定義済みNWアドレスを2進に変換する．
+                    byte[] bIP = InetAddress.getByName(org_nwAddr).getAddress();
+                    String ip_binary = new BigInteger(1, bIP).toString(2);
+                    ipMap.put(ip_binary, new Integer(1));
+                }
+
+
                 //System.out.println(info.getOperatingSystem().getNetworkParams().getIpv4DefaultGateway());
 
                 for(int i=0;i<ifs.length;i++){
                     if(ifs[i].getIPv4addr().length>0){
                         byte a = ifs[i].getSubnetMasks()[0].byteValue();
                         String networkAddress = this.calcNetworkAddress(ifs[i].getIPv4addr()[0], ifs[i].getSubnetMasks()[0]);
-                        if(ip_binary.equals(networkAddress)){
+                        //if(ip_binary.equals(networkAddress)){
+                        if(ipMap.containsKey(networkAddress)){
                             //指定のネットワークに一致すれば，その帯域幅を取得する．
                             //親の帯域幅はわかる？
                             retAddr = ifs[i].getIPv4addr()[0];
