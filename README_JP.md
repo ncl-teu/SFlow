@@ -16,51 +16,8 @@
 
 ## セットアップ
 ### 設定ファイル（Delegator + ワーカに配備）
-- 設定ファイルは**nclw2.properties**で，下記のように設定します．自身で設定する必要がある箇所のみ表示しています．
-使用時には，このリポジトリにあるnclw2.propertiesを用いて，書き換えてください（↓をコピペしないでください）．
-~~~
-# IPベースによる通信ポート番号．例: 8088
-port_number=
-# DelegatorのIPアドレス．例: 192.168.1.17
-delegator_ip=
+- 設定ファイルは[nclw2.properties](https://github.com/ncl-teu/SFlow/blob/master/nclw2.properties)です．
 
-# Delegatorで行うSFCのスケジューリングアルゴリズム．下記の番号を指定してください．
-# 0: SF-CUV 1: HEFT 2: FWS 3: CoordVNF 4: HClustering 5: PEFT
-sched_algorithm=
-
-# 実行に必要な入力ファイルの転送プロトコル．現状は"ftp"を指定してください．
-input_file_transfer_protocol=ftp
-
-# FTPサーバのIPアドレスか，ホスト名を指定してください．
-ftp_server_ip=
-
-# FTPサーバへのログインID
-ftp_server_id=
-
-# FTPサーバへのログインパスワード
-ftp_server_pass=
-
-# FTPサーバの絶対パスのホームディレクトリ．最後は"/"をつけないでください．例: /home/test/workflow
-ftp_server_homedirName=nclw
-
-# DockerリポジトリのIPアドレス．
-docker_repository_ip=
-
-# Dockerリポジトリのイメージファイルが格納されているパス．最後は"/"をつけないでください．例: /home/test/images
-docker_repository_home=
-
-# DockerリポジトリのSSHログインのユーザID
-docker_repository_userid=
-
-# DockerリポジトリのSSHログインのパスワード
-docker_repository_password=
-
-# ワーカのワーキングディレクトリにおいて，Dockerイメージファイル(.tar）を格納するディレクトリ
-# 例: ワーカのワーキングディレクトリ: /home/test/work/ で，docker_localdir=docker_tar とすると，Docker
-# リポジトリからSSH経由で取得したtarファイルは，
-# /home/test/work/docker_tar 以下に保存される．
-docker_localdir=docker_tar
-~~~ 
 ### 環境情報のファイル(Delegatorで保持）
 - 環境情報ファイル(JSON)の形式は，↓のとおりです．実際に使われる特定環境用のファイルは，nclw/env_ncl.json に記載されています．
 - 下記の例は，データセンター(クラウド)が一つで，物理ホストがデータセンターに1台あります．当該ホストは2コアで，各コアではHyper-ThreadがONであるため，
