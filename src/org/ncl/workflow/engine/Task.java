@@ -4,8 +4,6 @@ import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.ConnectionInfo;
 import ch.ethz.ssh2.SCPClient;
 import ch.ethz.ssh2.Session;
-import com.amihaiemil.docker.Docker;
-import com.amihaiemil.docker.Images;
 import net.gripps.cloud.core.VM;
 import net.gripps.cloud.nfv.NFVEnvironment;
 import net.gripps.cloud.nfv.sfc.SFC;
@@ -17,6 +15,8 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.ncl.workflow.ccn.autoicnsfc.AutoICNSFCMgr;
 import org.ncl.workflow.comm.*;
 import org.ncl.workflow.util.NCLWUtil;
+import com.amihaiemil.docker.Docker;
+import com.amihaiemil.docker.Images;
 
 import java.io.*;
 import java.nio.charset.Charset;

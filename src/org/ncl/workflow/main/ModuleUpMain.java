@@ -6,7 +6,7 @@ import net.gripps.environment.Machine;
 import org.ncl.workflow.util.HostInfo;
 import org.ncl.workflow.util.NCLWUtil;
 import org.ncl.workflow.util.SshCommandExecute;
-import sun.awt.image.ImageWatched;
+//import sun.awt.image.ImageWatched;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -66,7 +66,7 @@ public class ModuleUpMain {
                     SCPClient scp = conn.createSCPClient();
                     //scp.put("/home/kanemih/gripps/", h.getPath(), "0755");
 
-                    ModuleUpMain.putDir(conn, "/home/"+user+"/gripps/", h.getPath(), "0777");
+                    ModuleUpMain.putDir(conn, "/home/"+user+"/SFlow/", h.getPath(), "0000");
 
                     SshCommandExecute ssh1 = new SshCommandExecute(conn.openSession());
                     ssh1.exec("ls -l");
