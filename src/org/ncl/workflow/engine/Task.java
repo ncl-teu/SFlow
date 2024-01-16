@@ -15,8 +15,8 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.ncl.workflow.ccn.autoicnsfc.AutoICNSFCMgr;
 import org.ncl.workflow.comm.*;
 import org.ncl.workflow.util.NCLWUtil;
-import com.amihaiemil.docker.Docker;
-import com.amihaiemil.docker.Images;
+// import com.amihaiemil.docker.Images;
+// import com.amihaiemil.docker.Docker;
 
 import java.io.*;
 import java.nio.charset.Charset;
