@@ -689,7 +689,6 @@ System.out.println("ServerPath:"+serverPath);
                         dockerExistCmd.add(this.docker_image);
 
                         LinkedList<String> dockerCmd = new LinkedList<String>();
-                        dockerCmd = this.generateDockerRunCmd(actualCmd);
                         if(this.isDockerExecutable(dockerExistCmd, this.docker_image)){
                             System.out.println("****OK! Executable2!!!****");
 
