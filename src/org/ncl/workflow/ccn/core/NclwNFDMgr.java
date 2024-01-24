@@ -100,8 +100,8 @@ public class NclwNFDMgr {
             ret = this.faceMap.get(ip);
         }else{
             try{
-//                ret = new TcpFace(new FaceUri("tcp4", this.getOwnIPAddr(), NCLWUtil.NFD_PORT),
-//                        new FaceUri("tcp4", ip, NCLWUtil.NFD_PORT));
+                ret = new TcpFace(new FaceUri("tcp4", this.getOwnIPAddr(), NCLWUtil.NFD_PORT),
+                        new FaceUri("tcp4", ip, NCLWUtil.NFD_PORT));
                 this.faceMap.put(ip, ret);
                 //fibへ登録する．特にprefixは指定しないので，/に登録する．
                 Pair<FibEntry> fibEntry = this.getPipeline().getFib().insert(new Name("/"), ret, 1);
@@ -573,4 +573,8 @@ public class NclwNFDMgr {
     public void setFw(Forwarder fw) {
         this.fw = fw;
     }
+
+
+
+
 }

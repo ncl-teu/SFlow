@@ -76,7 +76,7 @@ public class TcpFace extends AbstractFace implements Serializable {
 		receiveQueue.add(newAttachment);
 		this.asynchronousSocketChannel.read(newAttachment.inputBuffer, newAttachment, receiveHandler);
 		logger.setLevel(NfdCommon.LOG_LEVEL);
-//		NclwNFDMgr.getIns().setFace(this);
+		NclwNFDMgr.getIns().setFace(this);
 	}
 
 	public TcpFace(FaceUri localUri, FaceUri remoteUri, AsynchronousSocketChannel asynchronousSocketChannel){
@@ -101,7 +101,7 @@ public class TcpFace extends AbstractFace implements Serializable {
 		ReceiveAttachment newAttachment = new ReceiveAttachment();
 		receiveQueue.add(newAttachment);
 		//this.asynchronousSocketChannel.read(newAttachment.inputBuffer, newAttachment, receiveHandler);
-//		NclwNFDMgr.getIns().setFace(this);
+		NclwNFDMgr.getIns().setFace(this);
 ////Added by Kanemitsu////
 
 	}
